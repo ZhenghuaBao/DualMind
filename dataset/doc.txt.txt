@@ -1,0 +1,37 @@
+5Pils dataset - V1.0
+
+
+Description: The 5Pils dataset consists of 1,676 fact-checked images annotated with question-answer pairs based on the 5 Pillars framework for image contextualization. 
+The dataset annotations are contained in the train.json, val.json, and test.json files of the dataset folder. 
+More information about the dataset structure can be found in the README file.
+
+❕Content warning ❕
+5Pils contains examples of real-world misinformation. Due to the real-world nature of the data, events covered include wars and conflicts. 
+As a result, some images contain graphic, violent content. When collecting the data, 
+we decided not to filter out images with violent content to cover the actual distribution of images that our target users, 
+professional fact-checkers, would want to provide as input. Given the graphic nature of some images, we do not release them directly. 
+Instead, we do publicly release the URLs of the FC articles, as well as the script that allows to collect and process the images.
+
+
+Authors: Jonathan Tonglet (1, 2), Marie-Francine Moens (3), Iryna Gurevych (1)
+(1) UKP Lab, Technical University Darmstadt
+(2) KU Leuven, Department of Electrical Engineering
+(3) KU Leuven, Department of Computer Science
+
+
+License: The dataset is released under a CC-BY-SA-4.0 license. The license file can be found in this folder.
+
+
+Citation: If you use this dataset in your research, please use the following citation,
+
+@article{tonglet2024imagetellstorypredicting,
+  title={"Image, Tell me your story!" Predicting the original meta-context of visual misinformation},
+  author={Tonglet, Jonathan and Moens, Marie-Francine and Gurevych, Iryna},
+  journal={arXiv preprint arXiv:2408.09939},
+  year={2024},
+  doi={10.48550/arXiv.2408.09939},
+  url={https://www.arxiv.org/abs/2408.09939}
+}
+
+
+GitHub Repo  (containing the scripts to collect the images): https://github.com/UKPLab/5pils 
