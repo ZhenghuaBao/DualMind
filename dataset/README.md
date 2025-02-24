@@ -1,13 +1,24 @@
 # The 5Pils dataset 📸
 
-The 5Pils dataset contains 1,676 fact-checked images annotated with their meta-context. The dataset is split in 3 json files containing  the train, val, and test sets.
-5Pils is made available under a **CC-BY-SA-4.0** license.
+The 5Pils dataset contains the annotated meta-context of 1,676 fact-checked images. The dataset is split in 3 json files containing  the train, val, and test sets.
+5Pils is made available under a **CC-BY-SA-4.0** license. Instructions to download the images are provided [here](https://github.com/UKPLab/5pils/blob/main/README.md#usage---dataset). 
+
+```
+$ conda create --name 5Pils python=3.9
+$ conda activate 5Pils
+$ pip install -r requirements.txt
+$ python -m spacy download en_core_web_lg
+$ python scripts/build_dataset_from_url.py
+```
+
+The dataset is also available on [TUdatalib](https://tudatalib.ulb.tu-darmstadt.de/handle/tudatalib/4317).
 
 Each record contains the following items: 
 
 **Main items**
 
 - `URL`: URL leading to the fact-checking article
+- `image URL`: URL leading to the fact-checked image
 - `image path` : local path to the image
 - `publication date` : publication date of the fact-checking article
 - `was the photo used before?` : answer to the Provenance pillar
@@ -48,7 +59,8 @@ The following items are provided as metadata for analysis purpose
         "verification strategy": "['reverse image search']",
         "verification tool": "['Other/Unspecified']",
         "claimed location": "Kabul, Afghanistan",
-        "claimed date": "2021"
+        "claimed date": "2021",
+        "image URL": "https://factly.in/wp-content/uploads//2021/08/IAF-Airlift-Afghanistan-FB-Post.jpg"
     }
 
 ````
@@ -104,5 +116,3 @@ The Locations  are mapped to coordinates and hierarchies using 🌍 [GeoNames](h
 ```
 $ python scripts/preprocess_dataset.py
 ```
-
-
