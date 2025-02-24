@@ -22,4 +22,5 @@ torch==2.1.2
 tqdm==4.66.1
 trafilatura==1.6.3
 transformers==4.37.0
-pre-commit
+keybert==0.9.0
+google-api-python-client==2.161.0
