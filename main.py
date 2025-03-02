@@ -18,7 +18,6 @@ if __name__=='__main__':
     vlm = args.vlm
     vlm_story = args.vlm_story
     
-
     llm = args.llm
     
     image_path = Path(args.image_path)
