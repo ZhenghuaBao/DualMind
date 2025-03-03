@@ -1,67 +1,66 @@
+from dotenv import load_dotenv
 from google.cloud import vision
 import os
+from openai import OpenAI
 from tqdm import tqdm
 import time
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
+from baseline.llm_prompting import gpt4_vision_prompting, gpt4_prompting
 from utils import *
 from dataset_collection.scrape_utils import *
 import argparse
 
+import requests
+import imghdr
 
-def detect_web(path, how_many_queries=30):
-    """
-    Detects web annotations given an image.
-    """
-    client = vision.ImageAnnotatorClient()
 
-    with open(path, "rb") as image_file:
-        content = image_file.read()
+def google_search(query, google_api_key, google_cse_id, num_results=5):
+    url = "https://www.googleapis.com/customsearch/v1"
+    params = {
+        "q": query,
+        "key": google_api_key,
+        "cx": google_cse_id,
+        "num": num_results,
+    }
 
-    image = vision.Image(content=content)
+    response = requests.get(url, params=params)
 
-    response = client.web_detection(image=image, max_results=how_many_queries)
-    annotations = response.web_detection
+    if response.status_code == 200:
+        results = response.json()
+        search_results = results.get("items", [])
 
-    page_urls = []
-    matching_image_urls = {}
-    visual_entities = {}
+        # Extracting title, link, and image (if available)
+        extracted_results = []
+        for item in search_results:
+            title = item.get("title")
+            link = item.get("link")
+            image_links = []  # ✅ Initialize as an empty list
 
-    if annotations.pages_with_matching_images:
-        print(
-            "\n{} Pages with matching images found:".format(
-                len(annotations.pages_with_matching_images)
+            # Check if images exist in pagemap
+            if "pagemap" in item:
+                pagemap = item["pagemap"]
+
+                # ✅ Extract all image links (if available)
+                if "cse_image" in pagemap:
+                    image_links = [
+                        img["src"] for img in pagemap["cse_image"] if "src" in img
+                    ]
+
+            extracted_results.append(
+                {
+                    "title": title,
+                    "link": link,
+                    "image": image_links,
+                }  # ✅ Now safe to use
             )
-        )
 
-        for page in annotations.pages_with_matching_images:
-            page_urls.append(page.url)
-            if page.full_matching_images:
-                # List of image URLs for that webpage (the image can appear more than once)
-                matching_image_urls[page.url] = [
-                    image.url for image in page.full_matching_images
-                ]
-            else:
-                matching_image_urls[page.url] = []
-            if page.partial_matching_images:
-                matching_image_urls[page.url] += [
-                    image.url for image in page.partial_matching_images
-                ]
+        return extracted_results
+
     else:
-        print("No matching images found for " + path)
-    if annotations.web_entities:
-        for entity in annotations.web_entities:
-            # Collect web entities as entity-score dictionary pairs
-            visual_entities[entity.description] = entity.score
-
-    if response.error.message:
-        raise Exception(
-            "{}\nFor more info on error messages, check: "
-            "https://cloud.google.com/apis/design/errors".format(response.error.message)
-        )
-
-    return page_urls, matching_image_urls, visual_entities
+        print(f"Error {response.status_code}: {response.text}")
+        return []
 
 
 if __name__ == "__main__":
@@ -69,34 +68,35 @@ if __name__ == "__main__":
         description="Collect evidence using Google Reverse Image Search."
     )
     parser.add_argument(
-        "--collect_google",
-        type=int,
-        default=0,
-        help="Whether to collect evidence URLs with the google API. If 0, it is assumed that a file containing URLs already exists.",
+        "--openai_api_key",
+        type=str,
+        default=" ",  # Provide your own key here as default value
+        help="Your key to access the OpenAI services, including the chat API.",
+    )
+    parser.add_argument(
+        "--google_search_api_key",
+        type=str,
+        default=" ",  # Provide your own key here as default value
+        help="Your key to access the Google Web Search services",
+    )
+
+    parser.add_argument(
+        "--image_path",
+        type=str,
+        default="dataset/test_img/",
+        help="The folder where the images are stored.",
+    )
+    parser.add_argument(
+        "--raw_keyword_urls_path",
+        type=str,
+        default="dataset/retrieval_results/keyword_results.json",
+        help="The json file to store the raw keyword search results.",
     )
     parser.add_argument(
         "--evidence_urls",
         type=str,
         default="dataset/retrieval_results/evidence_urls.json",
         help="Path to the list of evidence URLs to scrape. Needs to be a valid file if collect_google is set to 0.",
-    )
-    parser.add_argument(
-        "--google_vision_api_key",
-        type=str,
-        default=" ",  # Provide your own key here as default value
-        help="Your key to access the Google Vision services, including the web detection API. Only needed if collect_google is set to 1.",
-    )
-    parser.add_argument(
-        "--image_path",
-        type=str,
-        default="dataset/processed_img/",
-        help="The folder where the images are stored.",
-    )
-    parser.add_argument(
-        "--raw_ris_urls_path",
-        type=str,
-        default="dataset/retrieval_results/ris_results.json",
-        help="The json file to store the raw RIS results.",
     )
     parser.add_argument(
         "--scrape_with_trafilatura",
@@ -107,19 +107,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--trafilatura_path",
         type=str,
-        default="dataset/retrieval_results/trafilatura_data.json",
-        help="The json file to store the scraped trafilatura  content as a json file.",
+        default="dataset/retrieval_results/trafilatura_data_keyword.json",
+        help="The json file to store the scraped trafilatura content as a json file.",
     )
     parser.add_argument(
         "--json_path",
         type=str,
-        default="dataset/retrieval_results/evidence.json",
-        help="The json file to store the text evidence as a json file.",
+        default="dataset/retrieval_results/keyword_evidence.json",
+        help="The json file to store the text keyword evidence as a json file.",
+    )
+    parser.add_argument(
+        "--collect_keyword",
+        type=int,
+        default=0,
+        help="Collect evidence using Google Search.",
     )
     parser.add_argument(
         "--max_results",
         type=int,
-        default=50,
+        default=10,
         help="The maximum number of web-pages to collect with the web detection API.",
     )
     parser.add_argument(
@@ -129,44 +135,64 @@ if __name__ == "__main__":
         help="The waiting time between two web detection API calls",
     )
 
+    load_dotenv()
+
     args = parser.parse_args()
-    key = os.getenv(args.google_vision_api_key)
+    googel_api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
+    google_cse_id = os.getenv("GOOGLE_CSE_ID")
+    # openai_key = os.getenv("OPENAI_API_KEY")
 
     # Create directories if they do not exist yet
     if not "retrieval_results" in os.listdir("dataset/"):
         os.mkdir("dataset/keyword_retrieval_results/")
 
-    # Google RIS
-    if args.collect_google:
-        # Change the output file
+    if args.collect_keyword:
         raw_keyword_results = []
-        for path in tqdm(os.listdir(args.image_path)):
-            urls, image_urls, vis_entities = detect_web(
-                args.image_path + path, args.max_results
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        prompt = "Please tell me the story of the given image."
+
+        valid_image_paths = get_valid_images(args.image_path)
+
+        for path in tqdm(valid_image_paths):
+            # Generate STORY from the image
+            story = gpt4_vision_prompting(prompt, client, path)
+            # Generate a suitable query for web search
+            query_prompt = (
+                "Please formulate the given story into a suitable query for web search. /n Story: "
+                + story
             )
-            raw_ris_results.append(
+            keyword_query = gpt4_prompting(query_prompt, client)
+            # Getting keyword search results
+            keyword_search_results = google_search(
+                keyword_query, googel_api_key, google_cse_id
+            )
+
+            titles = [r["title"] for r in keyword_search_results]
+            urls = [r["link"] for r in keyword_search_results]
+            image_urls = [r["image"] for r in keyword_search_results]
+
+            raw_keyword_results.append(
                 {
                     "image path": args.image_path + path,
+                    "story": story,
+                    "titles": titles,
                     "urls": urls,
                     "image urls": image_urls,
-                    "visual entities": vis_entities,
                 }
             )
             time.sleep(args.sleep)
-        with open(args.raw_ris_urls_path, "w") as file:
+        with open(args.raw_keyword_urls_path, "w") as file:
             # Save raw results
-            json.dump(raw_ris_results, file, indent=4)
+            json.dump(raw_keyword_results, file, indent=4)
         # Apply filtering to the URLs to remove content produced by FC organizations and content that is not scrapable
-        selected_data = get_filtered_retrieval_results(args.raw_ris_urls_path)
+        selected_data = get_filtered_retrieval_keyword_results(
+            args.raw_keyword_urls_path
+        )
 
     else:
-        # Load evidence that have already been collected
-        # Further ensure that there is a corresponding image already downloaded
-        selected_data = [
-            d
-            for d in load_json(args.evidence_urls)
-            if d["image path"].split("/")[-1] in os.listdir("dataset/processed_img/")
-        ]
+        selected_data = get_filtered_retrieval_keyword_results(
+            args.raw_keyword_urls_path
+        )
 
     urls = [d["raw url"] for d in selected_data]
     images = [d["image urls"] for d in selected_data]
@@ -175,24 +201,26 @@ if __name__ == "__main__":
         # Collect results with Trafilatura
         output = []
         for u in tqdm(range(len(urls))):
+            print(images[u])
             output.append(extract_info_trafilatura(urls[u], images[u]))
-            # Only store in json file every 50 evidence
-            if u % 50 == 0:
+            # Only store in json file every 5 evidence
+            if u % 5 == 0:
                 save_result(output, args.trafilatura_path)
                 output = []
-
+    raise
     # Save all results in a Pandas Dataframe
     evidence_trafilatura = load_json(args.trafilatura_path)
-    dataset = (
-        load_json("dataset/train.json")
-        + load_json("dataset/val.json")
-        + load_json("dataset/test.json")
-    )
-    evidence = (
-        merge_data(evidence_trafilatura, selected_data, dataset)
-        .fillna("")
-        .to_dict(orient="records")
-    )
+    evidence = evidence_trafilatura.fillna("").to_dict(orient="records")
+    # dataset = (
+    #     load_json("dataset/train.json")
+    #     + load_json("dataset/val.json")
+    #     + load_json("dataset/test.json")
+    # )
+    # evidence = (
+    #     merge_data(evidence_trafilatura, selected_data, dataset)
+    #     .fillna("")
+    #     .to_dict(orient="records")
+    # )
     # Save the list of dictionaries as a JSON file
     with open(args.json_path, "w") as file:
         json.dump(evidence, file, indent=4)
