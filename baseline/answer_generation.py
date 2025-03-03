@@ -205,3 +205,88 @@ def run_model(
             data["output"] = output
             save_result(data, results_json)
             time.sleep(sleep)
+
+
+def run_fallback_model(
+    image_paths,
+    task,
+    ground_truth,
+    results_json,
+    map_manipulated,
+    model,
+    evidence=[],
+    evidence_idx=[],
+    client=None,
+    max_tokens=50,
+    temperature=0.2,
+    sleep=5,
+):
+    """
+    Main loop to perform question answering with LLMs.
+    Params:
+        image_paths (list): a list containing the paths to the images
+        question (str): the task to perform. One of [source, location, motivation]
+        ground_truth (str): the ground truth answer, stored together with the prediction
+        results_json (json): the json file where the model output should be saved
+        map_manipulated (dict): a dictionary that maps manipulated images to their unaltered retrieved version.
+        model (str): the model to use. One of [gpt4, llava, llama]
+        evidence (list): a list of dictionaries containing all the evidence
+        evidence_idx (list): the index of the evidence to use
+        client  (object): the Azure OpenAI client object. Only required for gpt4 predictions
+        max_tokens (int): the maximum number of tokens to generate as output
+        temperature (float): the temperature of the model. Lower values make the output more deterministic
+        sleep (int): the waiting time between two answer generation.
+    """
+
+    # Select the prompt assembler
+    prompt_assembler_dict = {
+        "gpt4": assemble_prompt_gpt4,
+        "llava": assemble_prompt_llava,
+        "llama": assemble_prompt_llama,
+    }
+    assembler = prompt_assembler_dict[model]
+
+    questions = {
+        "source": "Who is the source/author of this image? Answer only with one or more persons or entities in a few words.",
+        "date": "When was this image taken? Answer only with one or more dates in a few words.",
+        "location": "Where was this image taken? Answer only with one or more locations in a few words.",
+        "motivation": "Why was this image taken? Answer in a few words.",
+    }
+
+    question = questions[task]
+
+    # Main loop
+    for i in tqdm(range(len(image_paths))):
+        if len(evidence_idx[i]) != 0:
+            # Take the subset of evidence matching the image, then take the top K based on CLIP ranking
+            evidence_image_subset = [
+                ev for ev in evidence if ev["image path"] == image_paths[i]
+            ]
+            evidence_selection = [evidence_image_subset[idx] for idx in evidence_idx[i]]
+            prompt = assembler(
+                question, evidence=evidence_selection, modality="multimodal"
+            )
+        else:
+            prompt = assembler(question, modality="multimodal")
+
+        if model == "gpt4":
+            output = gpt4_vision_prompting(
+                prompt,
+                client,
+                image_paths[i],
+                map_manipulated_original=map_manipulated,
+                modality="multimodal",
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        else:
+            print("Error : wrong model provided")
+            break
+        # Save results
+        if type(output) == str:
+            data = {}
+            data["img_path"] = image_paths[i]
+            data["ground_truth"] = ground_truth[i]
+            data["output"] = output
+            save_result(data, results_json)
+            time.sleep(sleep)

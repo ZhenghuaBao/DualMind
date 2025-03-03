@@ -89,7 +89,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--raw_keyword_urls_path",
         type=str,
-        default="dataset/retrieval_results/keyword_results.json",
+        default="dataset/retrieval_results/keyword_evidence.json",
         help="The json file to store the raw keyword search results.",
     )
     parser.add_argument(

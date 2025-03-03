@@ -31,7 +31,7 @@ def gpt4_vision_prompting(
     client,
     image_path,
     map_manipulated_original={},
-    modality="vision",
+    modality="multimodal",
     temperature=0.2,
     max_tokens=50,
 ):
@@ -62,7 +62,7 @@ def gpt4_vision_prompting(
 
 
 def assemble_prompt_gpt4(
-    question, answer=None, evidence=[], demonstrations=[], modality="vision"
+    question, answer=None, evidence=[], demonstrations=[], modality="multimodal"
 ):
     """
     Assemble the prompt for GPT4.
@@ -82,7 +82,7 @@ def assemble_prompt_gpt4(
     if modality == "evidence":
         prompt += "You are given online articles that used a certain image. Your task is to answer a question about the image.\n\n"
     elif modality == "multimodal":
-        prompt += "You are given an image and online articles that used that image. Your task is to answer a question about the image using the image and the articles.\n\n"
+        prompt += "You are given an image and online articles that used that image. Your task is to answer a question about the image using the image and the articles. If you can not generate any answers based on the input given please return NaN.\n\n"
     else:
         prompt += "You are given an image. Your task is to answer a question about the image.\n\n"
     if len(evidence) != 0:
