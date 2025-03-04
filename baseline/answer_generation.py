@@ -241,8 +241,6 @@ def run_fallback_model(
     # Select the prompt assembler
     prompt_assembler_dict = {
         "gpt4": assemble_prompt_gpt4,
-        "llava": assemble_prompt_llava,
-        "llama": assemble_prompt_llama,
     }
     assembler = prompt_assembler_dict[model]
 
@@ -283,7 +281,7 @@ def run_fallback_model(
             print("Error : wrong model provided")
             break
         # Save results
-        if type(output) == str:
+        if isinstance(output, str):
             data = {}
             data["img_path"] = image_paths[i]
             data["ground_truth"] = ground_truth[i]

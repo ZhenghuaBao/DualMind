@@ -1,12 +1,17 @@
 import argparse
-from openai import AzureOpenAI, OpenAI
 import os
 import sys
+import json
+import numpy as np
+
+from openai import OpenAI
+from baseline.answer_generation import run_fallback_model
+from baseline.generation_utils import get_topk_evidence
+from utils import load_json
+from dotenv import load_dotenv
+
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from baseline.answer_generation import *
-from baseline.generation_utils import *
-from baseline.llm_prompting import *
 
 
 # Export your OpenAI API in your environment for later use
@@ -15,24 +20,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate 5 pillars answers with LLMs."
     )
-    # parser.add_argument(
-    #     "--openai_api_key",
-    #     type=str,
-    #     default=" ",  # Insert your key here
-    #     help="The environment variable name for your secret key to access Azure openAI services.",
-    # )
-    # parser.add_argument(
-    #     "--api_version",
-    #     type=str,
-    #     default="2023-10-01-preview",
-    #     help="The version of the Azure OpenAI services to use.",
-    # )
-    # parser.add_argument(
-    #     "--endpoint",
-    #     type=str,
-    #     default=" ",  # Insert your endpoint here
-    #     help="The environment variable name for the endpoint to access Azure openAI services.",
-    # )
     parser.add_argument(
         "--map_manipulated_original",
         type=str,
@@ -85,7 +72,10 @@ if __name__ == "__main__":
         help="The waiting time between two answer generation.",
     )
 
+    load_dotenv()
+
     args = parser.parse_args()
+
     if args.model == "gpt4":
         client = OpenAI()
     else:
@@ -115,7 +105,9 @@ if __name__ == "__main__":
         ground_truth = [t[args.task] for t in task_test]
 
     # Load embeddings and evidence
-    clip_evidence_embeddings = np.load("dataset/embeddings/evidence_embeddings.npy")
+    clip_keyword_evidence_embeddings = np.load(
+        "dataset/embeddings/keyword_evidence_embeddings.npy"
+    )
     image_embeddings = np.load("dataset/embeddings/image_embeddings.npy")
     image_embeddings_map = load_json("dataset/embeddings/image_embeddings_map.json")
     keyword_evidence = load_json("dataset/retrieval_results/keyword_evidence.json")
@@ -128,13 +120,10 @@ if __name__ == "__main__":
                     image_paths[i],
                     keyword_evidence,
                     image_embeddings,
-                    clip_evidence_embeddings,
+                    clip_keyword_evidence_embeddings,
                     image_embeddings_map,
                 )
             )
-    # Select demonstrations
-    # Keep train images that have evidence
-    images_with_evidence = [ev["image path"] for ev in evidence]
 
     # Run the main loop
     run_fallback_model(
@@ -144,7 +133,7 @@ if __name__ == "__main__":
         args.results_file,
         map_manipulated,
         args.model,
-        evidence,
+        keyword_evidence,
         evidence_idx,
         client,
         args.max_tokens,
