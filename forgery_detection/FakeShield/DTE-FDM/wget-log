@@ -1,0 +1,6 @@
+--2025-03-02 21:21:02--  https://cdn-lfs-cn-1.modelscope.cn/prod/lfs-objects/a7/bf/3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e?filename=sam_vit_h_4b8939.pth
+Resolving cdn-lfs-cn-1.modelscope.cn (cdn-lfs-cn-1.modelscope.cn)... 119.188.172.146, 2408:8719:3000:5:3::3fa
+Connecting to cdn-lfs-cn-1.modelscope.cn (cdn-lfs-cn-1.modelscope.cn)|119.188.172.146|:443... connected.
+HTTP request sent, awaiting response... 403 Forbidden
+2025-03-02 21:21:02 ERROR 403: Forbidden.
+
