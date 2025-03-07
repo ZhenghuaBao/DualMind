@@ -6,3 +6,6 @@ __pycache__/
 *.npy
 
 .DS_Store
+
+*.json
+*.jpg
