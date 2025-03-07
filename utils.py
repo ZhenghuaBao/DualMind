@@ -2,7 +2,11 @@ import os
 import json
 import glob
 import base64
-
+import requests
+import time
+import random
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 def load_json(file_path):
     """
@@ -50,6 +54,20 @@ def append_to_json(file_path, data):
 
 
 def save_result(output, json_file_path):
+    """
+    Save output results to a JSON file.
+    """
+    try:
+        if type(output) == str:
+            user_data = json.loads(output)
+            append_to_json(json_file_path, user_data)
+        else:
+            append_to_json(json_file_path, output)
+    except json.JSONDecodeError:
+        # The output was not well formatted
+        pass
+
+def save_keyword_result(output, json_file_path):
     """
     Save output results to a JSON file.
     """
@@ -137,3 +155,50 @@ def get_valid_images(folder_path):
         file_path = os.path.join(folder_path, filename)
         valid_images.append(file_path)
     return valid_images
+
+
+def download_images(image_url, filename):
+    save_directory = "dataset/keyword_images"
+
+    # Ensure the directory exists
+    os.makedirs(save_directory, exist_ok=True)
+
+    # Create a session with retries
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=5,  # Retry up to 5 times
+        backoff_factor=2,  # Wait time increases exponentially (1s, 2s, 4s...)
+        status_forcelist=[500, 502, 503, 504],  # Retry only on these errors
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
+    # Save the image
+    path = os.path.join(save_directory, filename)
+
+    try:
+        response = session.get(image_url, headers=headers, timeout=15)
+        response.raise_for_status()  # Raise an error if status code is not 200
+
+        with open(path, "wb") as file:
+            file.write(response.content)
+        print(f"Downloaded: {filename}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to download {image_url}: {e}")
+
+    time.sleep(random.uniform(2, 5))  # Random delay to avoid bloc
+
+
+def classify_similarity(cosine_score):
+    if 0.8 <= cosine_score <= 1.0:
+        return "High"
+    elif 0.5 <= cosine_score < 0.8:
+        return "Medium"
+    else:
+        return "Low"
