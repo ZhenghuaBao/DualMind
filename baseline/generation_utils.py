@@ -32,6 +32,22 @@ def sort_with_clip_score(image_index,
     # Return only indices, not similarities
     return [idx for idx, _ in sorted_indices]
 
+def sort_story_with_clip_score(evidence_index_list,
+                        clip_evidence_embeddings,
+                        clip_story_embeddings):
+    '''
+    Sort the candidate evidence based on CLIP score with the story.
+    '''
+    similarities = []
+
+    for idx in evidence_index_list:
+        sim = cosine_similarity(clip_evidence_embeddings[idx], clip_story_embeddings[idx]) 
+        similarities.append((idx, sim))
+    # Sort by similarity in descending order
+    sorted_indices = sorted(similarities, key=lambda x: x[1], reverse=True)
+    # Return only indices, not similarities
+    return [idx for idx, _ in sorted_indices]
+
 
 def sort_with_image_similarity(image_index,
                                train_images_index_list,
@@ -59,6 +75,8 @@ def get_topk_evidence(image_path,
     '''
     Given an image, get the topk evidence using CLIP similarity.
     '''
+    # for ev in evidence:
+    #     print (ev['image path'])
     evidence = [ev for ev in evidence if ev['image path']==image_path]
     evidence_index = [evidence.index(ev) for ev in evidence if ev['image path']==image_path]
     if len(evidence_index)>k:
@@ -67,12 +85,62 @@ def get_topk_evidence(image_path,
                                                evidence_index,
                                                image_embeddings,
                                                clip_evidence_embeddings)
+        print (f'Sorted evidence: {sorted_evidence}')
+        return sorted_evidence[:k]
+    else:
+        #If less than k evidence, skip ranking step and return all of them
+        return evidence_index
+
+def get_topk_keyword_evidence(image_path,
+                      evidence,
+                      image_embeddings,
+                      clip_evidence_embeddings,
+                      image_map,
+                      k=3):
+    '''
+    Given an image, get the topk keyword evidence using CLIP similarity.
+    '''
+    # for ev in evidence:
+    #     print (ev['image path'])
+    evidence = [ev for ev in evidence if ev['image path']==image_path and ev['downloaded']]
+    evidence_index = [evidence.index(ev) for ev in evidence if ev['image path']==image_path and ev['downloaded']]
+    if len(evidence_index)>k:
+        image_index = int(image_map[image_path])
+        sorted_evidence = sort_with_clip_score(image_index,
+                                               evidence_index,
+                                               image_embeddings,
+                                               clip_evidence_embeddings)
+        print (f'Sorted evidence: {sorted_evidence}')
         return sorted_evidence[:k]
     else:
         #If less than k evidence, skip ranking step and return all of them
         return evidence_index
 
     
+def get_topk_story(image_path,
+                      evidence,
+                      clip_evidence_embeddings,
+                      clip_story_embeddings,
+                      k=3):
+    '''
+    Given an image, get the topk keyword evidence using CLIP similarity.
+    '''
+    # for ev in evidence:
+    #     print (ev['image path'])
+    evidence = [ev for ev in evidence if ev['image path']==image_path and ev['downloaded']]
+    evidence_index = [evidence.index(ev) for ev in evidence if ev['image path']==image_path and ev['downloaded']]
+    if len(evidence_index)>k:
+        sorted_evidence = sort_story_with_clip_score(
+                                               evidence_index,
+                                               clip_evidence_embeddings,
+                                               clip_story_embeddings)
+        print (f'Sorted evidence: {sorted_evidence}')
+        return sorted_evidence[:k]
+    else:
+        #If less than k evidence, skip ranking step and return all of them
+        return evidence_index
+
+
 def get_topk_demonstrations(image_path,
                             question,
                             train,
@@ -117,9 +185,9 @@ def get_evidence_prompt(evidence):
             text += 'Date: %s\n'%evidence[ev]['date']
         if 'description' in evidence[ev].keys():
             text += '%s\n'%evidence[ev]['description']
-
-        if 'Caption not found' not in evidence[ev]['image caption'] and 'Image not found' not in evidence[ev]['image caption']:
-            text += 'Image captions: %s\n' % evidence[ev]['image caption']
+        if 'image caption' and 'image caption' in evidence[ev] :
+            if 'Caption not found' not in evidence[ev]['image caption'] and 'Image not found' not in evidence[ev]['image caption']:
+                text += 'Image captions: %s\n' % evidence[ev]['image caption']
 
         text += '\n'
         prompt += text
@@ -156,6 +224,44 @@ def get_tokenized_evidence(evidence, tokenizer):
       text_list.append(text)
     return text_list
 
+def get_tokenized_keyword_evidence(evidence, tokenizer):
+    '''
+    Get tokenized to compute the keyword text embeddings.
+    '''
+    text_list = []
+    for s in tqdm(range(len(evidence))):
+        if evidence[s]["downloaded"]:
+            text = ''
+            text += evidence[s]['title']
+            image_caption = evidence[s]['image caption']
+            tmp = image_caption.replace("Image not found", "")
+            cleaned_text = tmp.replace("Caption not found", "").replace(";", " ").strip()
+            if cleaned_text:
+                text += cleaned_text
+            if text=='':
+                text += evidence[s]['description']
+            text = truncate_text(text,tokenizer)
+            text_list.append(text)
+        else:
+            text = "NaN"
+            text_list.append(text)
+    return text_list
+
+def get_tokenized_story(evidence, tokenizer):
+    '''
+    Get tokenized to compute the keyword story embeddings.
+    '''
+    text_list = []
+    for s in tqdm(range(len(evidence))):
+        if evidence[s]["downloaded"]:
+            text = ''
+            text += evidence[s]['story']
+            text = truncate_text(text,tokenizer)
+            text_list.append(text)
+        else:
+            text = "NaN"
+            text_list.append(text)
+    return text_list
 
 def compute_clip_text_embeddings(texts, model, tokenizer,  batch_size=16):
     '''
