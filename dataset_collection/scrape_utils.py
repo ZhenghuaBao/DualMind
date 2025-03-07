@@ -414,47 +414,47 @@ def get_filtered_retrieval_results(path):
     return selected_retrieval_results
 
 
-def get_filtered_retrieval_keyword_results(path):
-    """
-    Filter the results of keyword search.
-    Args:
-        path (str): path to the file that contains the raw keyword results from Google Search
-    """
-    keyword_results = load_json(path)
-    retrieval_results = []
-    # Iterate over the URLs and apply the filters
-    for i in range(len(keyword_results)):
-        for u in range(len(keyword_results[i]["urls"])):
-            # Loop through all evidence urls, and see if they meet the requirements
-            evidence_url = keyword_results[i]["urls"][u]
-            keyword_data = {
-                "image path": keyword_results[i]["image path"],
-                "raw url": evidence_url,
-                "image urls": keyword_results[i]["image urls"][u],
-                "is_fc": is_fc_organization("/".join(evidence_url.split("/")[:3])),
-                "is_https": evidence_url.startswith("https"),
-            }
-            # Apply additional conditions to each dictionary
-            keyword_data["is_banned"] = is_banned(keyword_data["raw url"])
-            keyword_data["is_obfuscated"] = is_obfuscated_or_encoded(
-                keyword_data["raw url"]
-            )
-            keyword_data["is_html"] = is_likely_html(keyword_data["raw url"])
-            # Selection condition
-            keyword_data["selection"] = (
-                keyword_data["is_html"]
-                and keyword_data["is_https"]
-                and not keyword_data["is_obfuscated"]
-                and not keyword_data["is_banned"]
-            )
-            # Append the dictionary to the list if it meets all the criteria
-            retrieval_results.append(keyword_data)
+# def get_filtered_retrieval_keyword_results(path):
+#     """
+#     Filter the results of keyword search.
+#     Args:
+#         path (str): path to the file that contains the raw keyword results from Google Search
+#     """
+#     keyword_results = load_json(path)
+#     retrieval_results = []
+#     # Iterate over the URLs and apply the filters
+#     for i in range(len(keyword_results)):
+#         for u in range(len(keyword_results[i]["link"])):
+#             # Loop through all evidence urls, and see if they meet the requirements
+#             evidence_url = keyword_results[i]["urls"][u]
+#             keyword_data = {
+#                 "image path": keyword_results[i]["image path"],
+#                 "raw url": evidence_url,
+#                 "image urls": keyword_results[i]["image urls"][u],
+#                 "is_fc": is_fc_organization("/".join(evidence_url.split("/")[:3])),
+#                 "is_https": evidence_url.startswith("https"),
+#             }
+#             # Apply additional conditions to each dictionary
+#             keyword_data["is_banned"] = is_banned(keyword_data["raw url"])
+#             keyword_data["is_obfuscated"] = is_obfuscated_or_encoded(
+#                 keyword_data["raw url"]
+#             )
+#             keyword_data["is_html"] = is_likely_html(keyword_data["raw url"])
+#             # Selection condition
+#             keyword_data["selection"] = (
+#                 keyword_data["is_html"]
+#                 and keyword_data["is_https"]
+#                 and not keyword_data["is_obfuscated"]
+#                 and not keyword_data["is_banned"]
+#             )
+#             # Append the dictionary to the list if it meets all the criteria
+#             retrieval_results.append(keyword_data)
 
-    # Filter the data based on the selection criteria
-    selected_retrieval_keyword_results = [
-        d for d in retrieval_results if d["selection"]
-    ]
-    return selected_retrieval_keyword_results
+#     # Filter the data based on the selection criteria
+#     selected_retrieval_keyword_results = [
+#         d for d in retrieval_results if d["selection"]
+#     ]
+#     return selected_retrieval_keyword_results
 
 
 def compute_url_distance(url1, url2, threshold):
@@ -537,6 +537,46 @@ def extract_info_trafilatura(page_url, image_url):
     except Exception as e:
         return f"Error occurred: {e}"
 
+def extract_keyword_info_trafilatura(page_url, image_url):
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        }
+        response = requests.get(page_url, headers=headers, timeout=(10, 10))
+        if response.status_code == 200:
+            # Extract content with Trafilatura
+            result = bare_extraction(
+                response.text, include_images=True, include_tables=False
+            )
+            # Remove unnecessary contente
+            keys_to_keep = [
+                "title",
+                "author",
+                "url",
+                "hostname",
+                "description",
+                "sitename",
+                "date",
+                "text",
+                "language",
+                "image",
+                "pagetype",
+            ]
+            result = {key: result[key] for key in keys_to_keep if key in result}
+            result["image url"] = image_url
+            # Finding the image caption
+            image_caption = []
+            soup = bs(response.text, "html.parser")
+            for img in image_url:
+                image_caption.append(find_image_caption(soup, img))
+            image_caption.append(find_image_caption(soup, result["image"]))
+            result["image caption"] = image_caption
+            result["url"] = page_url
+            return result
+        else:
+            return "Failed to retrieve webpage"
+    except Exception as e:
+        return f"Error occurred: {e}"
 
 def time_difference(date1, date2):
     """
