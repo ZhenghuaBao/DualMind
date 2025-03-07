@@ -7,7 +7,7 @@ import time
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from baseline.llm_prompting import gpt4_vision_prompting, gpt4_prompting
+from baseline.llm_prompting import gpt4_vision_prompting, gpt4_keyword_prompting, gpt4_prompting
 from utils import *
 from dataset_collection.scrape_utils import *
 import argparse
@@ -16,51 +16,53 @@ import requests
 import imghdr
 
 
-def google_search(query, google_api_key, google_cse_id, num_results=5):
-    url = "https://www.googleapis.com/customsearch/v1"
-    params = {
-        "q": query,
-        "key": google_api_key,
-        "cx": google_cse_id,
-        "num": num_results,
+def keyword_search(query, serper_api_key, num_results=30):
+    url = "https://google.serper.dev/search/images"
+
+    headers = {
+        "X-API-KEY": serper_api_key,
+        "Content-Type": "application/json"
     }
 
-    response = requests.get(url, params=params)
+    payload = {
+        "q": query,
+        "num": num_results  # Increase the number of results
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    results = []
 
     if response.status_code == 200:
-        results = response.json()
-        search_results = results.get("items", [])
+        data = response.json()
+        # Extract images from search results
+        for result in data.get("images", []):
+            title = result.get("title")
+            image = result.get("imageUrl")
+            thumbnail = result.get("thumbnailUrl")
+            source = result.get("source")
+            link = result.get("link")
+            position = result.get("position")
+            
 
-        # Extracting title, link, and image (if available)
-        extracted_results = []
-        for item in search_results:
-            title = item.get("title")
-            link = item.get("link")
-            image_links = []  # ✅ Initialize as an empty list
+            r = {
+                "title": title,
+                "source": source,
+                "link": link,
+                "image": image,
+                "position": position,
+            }
 
-            # Check if images exist in pagemap
-            if "pagemap" in item:
-                pagemap = item["pagemap"]
+            # print(f"Title: {title}\nSource: {source}\nURL: {link}\nImage: {image}\nPosition: {position}\n")
 
-                # ✅ Extract all image links (if available)
-                if "cse_image" in pagemap:
-                    image_links = [
-                        img["src"] for img in pagemap["cse_image"] if "src" in img
-                    ]
+            results.append(r)
 
-            extracted_results.append(
-                {
-                    "title": title,
-                    "link": link,
-                    "image": image_links,
-                }  # ✅ Now safe to use
-            )
+            # print("-" * 50)
 
-        return extracted_results
-
+        return results
     else:
-        print(f"Error {response.status_code}: {response.text}")
-        return []
+        print("Error:", response.status_code, response.text)
+        return {}
 
 
 if __name__ == "__main__":
@@ -74,30 +76,24 @@ if __name__ == "__main__":
         help="Your key to access the OpenAI services, including the chat API.",
     )
     parser.add_argument(
-        "--google_search_api_key",
+        "--serper_api_key",
         type=str,
         default=" ",  # Provide your own key here as default value
-        help="Your key to access the Google Web Search services",
+        help="Your Serper API key to access the Google Web Search services",
     )
 
     parser.add_argument(
         "--image_path",
         type=str,
-        default="dataset/test_img/",
+        default="dataset/processed_img/",
         help="The folder where the images are stored.",
     )
-    parser.add_argument(
-        "--raw_keyword_urls_path",
-        type=str,
-        default="dataset/retrieval_results/keyword_evidence.json",
-        help="The json file to store the raw keyword search results.",
-    )
-    parser.add_argument(
-        "--evidence_urls",
-        type=str,
-        default="dataset/retrieval_results/evidence_urls.json",
-        help="Path to the list of evidence URLs to scrape. Needs to be a valid file if collect_google is set to 0.",
-    )
+    # parser.add_argument(
+    #     "--raw_keyword_urls_path",
+    #     type=str,
+    #     default="dataset/retrieval_results/keyword_evidence_urls.json",
+    #     help="The json file to store the raw keyword search results.",
+    # )
     parser.add_argument(
         "--scrape_with_trafilatura",
         type=int,
@@ -138,9 +134,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     args = parser.parse_args()
-    googel_api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
-    google_cse_id = os.getenv("GOOGLE_CSE_ID")
-    # openai_key = os.getenv("OPENAI_API_KEY")
+    serper_api_key = os.getenv("SERPER_API_KEY")
 
     # Create directories if they do not exist yet
     if not "retrieval_results" in os.listdir("dataset/"):
@@ -155,72 +149,84 @@ if __name__ == "__main__":
 
         for path in tqdm(valid_image_paths):
             # Generate STORY from the image
-            story = gpt4_vision_prompting(prompt, client, path)
+            story = gpt4_vision_prompting(prompt, client, path, max_tokens=200)
             # Generate a suitable query for web search
             query_prompt = (
-                "Please formulate the given story into a suitable query for web search. /n Story: "
-                + story
+                "Please formulate the given story into a suitable web search query. /n Story: "
+                + str(story) + 
+                "/n Output: Return reformulated web search query."
             )
-            keyword_query = gpt4_prompting(query_prompt, client)
+            keyword_query, _ = gpt4_prompting(query_prompt, client)
+
             # Getting keyword search results
-            keyword_search_results = google_search(
-                keyword_query, googel_api_key, google_cse_id
+            keyword_search_results = keyword_search(
+                keyword_query, serper_api_key
             )
 
-            titles = [r["title"] for r in keyword_search_results]
-            urls = [r["link"] for r in keyword_search_results]
-            image_urls = [r["image"] for r in keyword_search_results]
-
-            raw_keyword_results.append(
-                {
-                    "image path": args.image_path + path,
+            for r in keyword_search_results:
+                merged_dict = {
+                    "image path": path,
                     "story": story,
-                    "titles": titles,
-                    "urls": urls,
-                    "image urls": image_urls,
+                    "query": keyword_query,
+                    **r,  # merges all key/value pairs from r
                 }
-            )
+                raw_keyword_results.append(
+                   merged_dict
+                )
+
             time.sleep(args.sleep)
-        with open(args.raw_keyword_urls_path, "w") as file:
+        with open(args.json_path, "w", encoding="utf-8") as file:
             # Save raw results
             json.dump(raw_keyword_results, file, indent=4)
-        # Apply filtering to the URLs to remove content produced by FC organizations and content that is not scrapable
-        selected_data = get_filtered_retrieval_keyword_results(
-            args.raw_keyword_urls_path
-        )
 
-    else:
-        selected_data = get_filtered_retrieval_keyword_results(
-            args.raw_keyword_urls_path
-        )
+        # # Apply filtering to the URLs to remove content produced by FC organizations and content that is not scrapable
+        # selected_data = get_filtered_retrieval_keyword_results(
+        #     args.raw_keyword_urls_path
+        # )
 
-    urls = [d["raw url"] for d in selected_data]
-    images = [d["image urls"] for d in selected_data]
+    # else:
+    #     selected_data = get_filtered_retrieval_keyword_results(
+    #         args.raw_keyword_urls_path
+    #     )
+
+    selected_data = load_json(args.json_path)
+
+    urls = [d["link"] for d in selected_data]
+    images = [d["image"] for d in selected_data]
+    image_paths = [d["image path"] for d in selected_data]
+    story = [d["story"] for d in selected_data]
+    query = [d["query"] for d in selected_data]
 
     if args.scrape_with_trafilatura:
         # Collect results with Trafilatura
         output = []
         for u in tqdm(range(len(urls))):
-            print(images[u])
-            output.append(extract_info_trafilatura(urls[u], images[u]))
+            result = extract_keyword_info_trafilatura(urls[u], images[u])
+            if isinstance(result, str):
+                pass
+            else:
+                output.append({
+                    "image path": image_paths[u],
+                    "story": story[u],
+                    "query": query[u],
+                    **result
+                })
+            
             # Only store in json file every 5 evidence
-            if u % 5 == 0:
-                save_result(output, args.trafilatura_path)
+            if u % 3 == 0:
+                save_keyword_result(output, args.trafilatura_path)
                 output = []
-    raise
+
+    # NOTE: After that we need to download keyword images into keyword_images folder -> download_keyword_search_images.py
+
+    
     # Save all results in a Pandas Dataframe
-    evidence_trafilatura = load_json(args.trafilatura_path)
-    evidence = evidence_trafilatura.fillna("").to_dict(orient="records")
-    # dataset = (
-    #     load_json("dataset/train.json")
-    #     + load_json("dataset/val.json")
-    #     + load_json("dataset/test.json")
-    # )
-    # evidence = (
-    #     merge_data(evidence_trafilatura, selected_data, dataset)
-    #     .fillna("")
-    #     .to_dict(orient="records")
-    # )
-    # Save the list of dictionaries as a JSON file
-    with open(args.json_path, "w") as file:
-        json.dump(evidence, file, indent=4)
+    # evidence_trafilatura = load_json(args.trafilatura_path)
+
+    # df = pd.DataFrame(evidence_trafilatura)
+    # df = df.fillna("")
+    # df.head()
+    # evidence = df.to_dict(orient="records")
+
+    # with open(args.json_path, "w") as file:
+    #     json.dump(evidence, file, indent=4)
