@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import shutil
+from tqdm import tqdm
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 from utils import download_images, load_json
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     images = [ev['image'] for ev in keyword_evidence]
     counter = 1
 
-    for image in images:
+    for image in tqdm(images):
         download_images(image, str(counter) + ".jpg")
         counter += 1
     

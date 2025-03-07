@@ -158,7 +158,7 @@ def get_valid_images(folder_path):
 
 
 def download_images(image_url, filename):
-    save_directory = "dataset/keyword_images"
+    save_directory = "dataset/keyword_images/test"
 
     # Ensure the directory exists
     os.makedirs(save_directory, exist_ok=True)
@@ -187,7 +187,7 @@ def download_images(image_url, filename):
 
         with open(path, "wb") as file:
             file.write(response.content)
-        print(f"Downloaded: {filename}")
+        # print(f"Downloaded: {filename}")
 
     except requests.exceptions.RequestException as e:
         print(f"Failed to download {image_url}: {e}")
