@@ -5,9 +5,10 @@ import json
 import numpy as np
 
 from openai import OpenAI
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from baseline.answer_generation import run_fallback_model
-from baseline.generation_utils import get_topk_evidence
-from utils import load_json
+from baseline.generation_utils import get_topk_keyword_evidence, cosine_similarity, get_topk_story
+from utils import load_json, classify_similarity
 from dotenv import load_dotenv
 
 
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     # Prepare data
     train = load_json("dataset/train.json")
     # Load test images
-    test = load_json("dataset/test.json")
+    test = load_json("dataset/test_test.json")
     task_test = [t for t in test if t[args.task] != "not enough information"]
     image_paths = [t["image path"] for t in task_test]
     if args.task == "date":
@@ -110,20 +111,56 @@ if __name__ == "__main__":
     )
     image_embeddings = np.load("dataset/embeddings/image_embeddings.npy")
     image_embeddings_map = load_json("dataset/embeddings/image_embeddings_map.json")
-    keyword_evidence = load_json("dataset/retrieval_results/keyword_evidence.json")
+    keyword_evidence = load_json("dataset/retrieval_results/processed_trafilatura_data_keyword.json")
+    clip_keyword_images_embeddings = np.load("dataset/embeddings/keyword_image_embeddings.npy")
+    clip_story_embeddings = np.load("dataset/embeddings/story_embeddings.npy")
+
     # Select evidence and demonstrations
     evidence_idx = []
+    keyword_image_embedding_idices = []
+    similarity_level = []
     if args.modality in ["evidence", "multimodal"]:
         for i in range(len(image_paths)):
-            evidence_idx.append(
-                get_topk_evidence(
+            topk_keyword_evidence = get_topk_keyword_evidence(
                     image_paths[i],
                     keyword_evidence,
                     image_embeddings,
                     clip_keyword_evidence_embeddings,
                     image_embeddings_map,
                 )
+
+            
+            evidence = [ev for ev in keyword_evidence if ev['image path']==image_paths[i] and ev['downloaded']]
+            keyword_image_embedding_idx_local = []
+            for ev_idx in topk_keyword_evidence:
+                keyword_image_embedding_idx = keyword_evidence.index(evidence[ev_idx])
+                keyword_image_embedding_idx_local.append(keyword_image_embedding_idx)
+            keyword_image_embedding_idices.append(keyword_image_embedding_idx_local)
+
+            score = []
+            for idx in keyword_image_embedding_idx_local:
+                s = cosine_similarity(image_embeddings[i], clip_keyword_images_embeddings[idx])
+                score.append(s)
+            similarity_level.append(classify_similarity(np.mean(score)))
+
+            evidence_idx.append(
+                topk_keyword_evidence
             )
+
+    story_evidence = {}
+
+    for idx, l in enumerate(similarity_level):
+        # If the score of selected evidence images is too low
+        if l == "Low":
+            story_evidence[idx] = get_topk_story(
+                image_paths[i],
+                keyword_evidence,
+                clip_keyword_evidence_embeddings,
+                clip_story_embeddings,
+                k=1
+            )
+        else:
+            continue
 
     # Run the main loop
     run_fallback_model(
@@ -135,6 +172,8 @@ if __name__ == "__main__":
         args.model,
         keyword_evidence,
         evidence_idx,
+        clip_keyword_images_embeddings,
+        story_evidence,
         client,
         args.max_tokens,
         args.temperature,
