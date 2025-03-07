@@ -94,17 +94,17 @@ def run_model(
                 evidence_selection = [
                     evidence_image_subset[idx] for idx in evidence_idx[i]
                 ]
-                if len(demonstrations[i]) != 0:
-                    prompt = assembler(
-                        question,
-                        evidence=evidence_selection,
-                        modality=modality,
-                        demonstrations=demonstrations[i],
-                    )
-                else:
-                    prompt = assembler(
-                        question, evidence=evidence_selection, modality=modality
-                    )
+                # if len(demonstrations[i]) != 0:
+                #     prompt = assembler(
+                #         question,
+                #         evidence=evidence_selection,
+                #         modality=modality,
+                #         demonstrations=demonstrations[i],
+                #     )
+                # else:
+                prompt = assembler(
+                    question, evidence=evidence_selection, modality=modality
+                )
             else:
                 # If no evidence, always default to a standard vision prompt
                 if len(demonstrations[i]) != 0:
@@ -216,6 +216,8 @@ def run_fallback_model(
     model,
     evidence=[],
     evidence_idx=[],
+    keyword_image_embeddings=[],
+    story_evidence=[],
     client=None,
     max_tokens=50,
     temperature=0.2,
@@ -232,6 +234,8 @@ def run_fallback_model(
         model (str): the model to use. One of [gpt4, llava, llama]
         evidence (list): a list of dictionaries containing all the evidence
         evidence_idx (list): the index of the evidence to use
+        keyword_image_embeddings (list): a list of keyword image embeddings
+        story_evidence (list): a list of story evidence
         client  (object): the Azure OpenAI client object. Only required for gpt4 predictions
         max_tokens (int): the maximum number of tokens to generate as output
         temperature (float): the temperature of the model. Lower values make the output more deterministic
@@ -255,17 +259,26 @@ def run_fallback_model(
 
     # Main loop
     for i in tqdm(range(len(image_paths))):
-        if len(evidence_idx[i]) != 0:
-            # Take the subset of evidence matching the image, then take the top K based on CLIP ranking
-            evidence_image_subset = [
-                ev for ev in evidence if ev["image path"] == image_paths[i]
-            ]
-            evidence_selection = [evidence_image_subset[idx] for idx in evidence_idx[i]]
-            prompt = assembler(
-                question, evidence=evidence_selection, modality="multimodal"
-            )
+
+        story_based_evidence = story_evidence.get(i, None)
+        if story_based_evidence:
+            story_evidence_subset = [
+                    ev for ev in evidence if ev["image path"] == image_paths[i] and ev["downloaded"]
+                ]
+            story_evidence_selection = [story_evidence_subset[idx] for idx in story_based_evidence]
+            prompt = assembler(question, evidence=story_evidence_selection, modality="story")
         else:
-            prompt = assembler(question, modality="multimodal")
+            if len(evidence_idx[i]) != 0:
+                # Take the subset of evidence matching the image, then take the top K based on CLIP ranking
+                evidence_image_subset = [
+                    ev for ev in evidence if ev["image path"] == image_paths[i] and ev["downloaded"]
+                ]
+                evidence_selection = [evidence_image_subset[idx] for idx in evidence_idx[i]]
+                prompt = assembler(
+                    question, evidence=evidence_selection, modality="multimodal"
+                )
+            else:
+                prompt = assembler(question, modality="multimodal")
 
         if model == "gpt4":
             output = gpt4_vision_prompting(
