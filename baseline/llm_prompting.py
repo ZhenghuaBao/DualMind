@@ -25,6 +25,23 @@ def gpt4_prompting(content, client, max_tokens=1000):
     usage = completion.usage.total_tokens
     return output, usage
 
+def gpt4_keyword_prompting(system_prompt, content, client, max_tokens=1000):
+    """
+    Prompting the standard GPT4 model. Used for data labeling.
+    """
+    deployment_name = "gpt-4o-mini"
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": content}
+        ]
+    completion = client.chat.completions.create(
+        model=deployment_name, messages=messages, max_tokens=max_tokens
+    )
+    output = completion.choices[0].message.content
+    usage = completion.usage.total_tokens
+    return output, usage
+
+
 
 def gpt4_vision_prompting(
     prompt,
@@ -81,8 +98,10 @@ def assemble_prompt_gpt4(
 
     if modality == "evidence":
         prompt += "You are given online articles that used a certain image. Your task is to answer a question about the image.\n\n"
+    elif modality == "story":
+        prompt += "You are given online articles that are related to the story of an image. Your task is to answer a question about the image.\n\n"
     elif modality == "multimodal":
-        prompt += "You are given an image and online articles that used that image. Your task is to answer a question about the image using the image and the articles. If you can not generate any answers based on the input given please return NaN.\n\n"
+        prompt += "You are given an image and online articles that used that image. Your task is to answer a question about the image using the image and the articles.\n\n"
     else:
         prompt += "You are given an image. Your task is to answer a question about the image.\n\n"
     if len(evidence) != 0:
