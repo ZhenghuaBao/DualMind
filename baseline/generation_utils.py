@@ -85,7 +85,7 @@ def get_topk_evidence(image_path,
                                                evidence_index,
                                                image_embeddings,
                                                clip_evidence_embeddings)
-        print (f'Sorted evidence: {sorted_evidence}')
+        # print (f'Sorted evidence: {sorted_evidence}')
         return sorted_evidence[:k]
     else:
         #If less than k evidence, skip ranking step and return all of them
@@ -104,13 +104,14 @@ def get_topk_keyword_evidence(image_path,
     #     print (ev['image path'])
     evidence = [ev for ev in evidence if ev['image path']==image_path and ev['downloaded']]
     evidence_index = [evidence.index(ev) for ev in evidence if ev['image path']==image_path and ev['downloaded']]
+
     if len(evidence_index)>k:
         image_index = int(image_map[image_path])
         sorted_evidence = sort_with_clip_score(image_index,
                                                evidence_index,
                                                image_embeddings,
                                                clip_evidence_embeddings)
-        print (f'Sorted evidence: {sorted_evidence}')
+        # print (f'Sorted evidence: {sorted_evidence}')
         return sorted_evidence[:k]
     else:
         #If less than k evidence, skip ranking step and return all of them
@@ -129,12 +130,13 @@ def get_topk_story(image_path,
     #     print (ev['image path'])
     evidence = [ev for ev in evidence if ev['image path']==image_path and ev['downloaded']]
     evidence_index = [evidence.index(ev) for ev in evidence if ev['image path']==image_path and ev['downloaded']]
+    # print (evidence_index)
     if len(evidence_index)>k:
         sorted_evidence = sort_story_with_clip_score(
                                                evidence_index,
                                                clip_evidence_embeddings,
                                                clip_story_embeddings)
-        print (f'Sorted evidence: {sorted_evidence}')
+        # print (f'Sorted evidence: {sorted_evidence}')
         return sorted_evidence[:k]
     else:
         #If less than k evidence, skip ranking step and return all of them

@@ -19,8 +19,10 @@ def run_model(
     map_manipulated,
     modality,
     model,
+    storys,
     evidence=[],
     evidence_idx=[],
+    confidence_levels=[],
     demonstrations=[],
     client=None,
     max_tokens=50,
@@ -39,6 +41,7 @@ def run_model(
         model (str): the model to use. One of [gpt4, llava, llama]
         evidence (list): a list of dictionaries containing all the evidence
         evidence_idx (list): the index of the evidence to use
+        confidence_levels (list): the confidence levels of selected evidence
         demonstrations (list): a list of demonstrations for few-shot answer generation
         client  (object): the Azure OpenAI client object. Only required for gpt4 predictions
         max_tokens (int): the maximum number of tokens to generate as output
@@ -74,17 +77,21 @@ def run_model(
     }
     assembler = prompt_assembler_dict[model]
 
-    questions = {
-        "source": "Who is the source/author of this image? Answer only with one or more persons or entities in a few words.",
-        "date": "When was this image taken? Answer only with one or more dates in a few words.",
-        "location": "Where was this image taken? Answer only with one or more locations in a few words.",
-        "motivation": "Why was this image taken? Answer in a few words.",
-    }
-
-    question = questions[task]
-
     # Main loop
     for i in tqdm(range(len(image_paths))):
+        for story in storys:
+            if story["image path"] == image_paths[i]:
+                s = story['story']
+        meaningful_part = s
+        questions = {
+            'source':f'Who is the source/author of this image? Answer only with one or more persons or entities in a few words. Please refer to the input, if there is more than one source then select the most relevant part to “{meaningful_part}” and generate an answer, even if you can not be sure, please select the most likely source.',
+            'date':f'When was this photo taken? Please refer to the date value in the input, if there is more than one date then select the most relevant part to “{meaningful_part}” and generate an answer, please only answer the date, even if you can not be sure, please select the most likely date.',
+            'location':f'Where was this image taken? Answer only with one or more locations in a few words.Please refer to the input, if there is more than one location then select the most relevant part to “{meaningful_part}” and generate an answer, even if you can not be sure, please select the most likely location.Please only answer the location.',
+            'motivation':f'Why was this image taken? Answer in a few words.Please refer to the input, if there is more than one motivation then select the most relevant part to “{meaningful_part}” and generate an answer, even if you can not be sure, please select the most likely motivation.'
+        }
+
+        question = questions[task]
+
         if modality in ["evidence", "multimodal"]:
             if len(evidence_idx[i]) != 0:
                 # Take the subset of evidence matching the image, then take the top K based on CLIP ranking
@@ -107,12 +114,12 @@ def run_model(
                 )
             else:
                 # If no evidence, always default to a standard vision prompt
-                if len(demonstrations[i]) != 0:
+                if demonstrations:
                     prompt = assembler(
-                        question, modality="vision", demonstrations=demonstrations[i]
+                        question, modality="multimodal", demonstrations=demonstrations[i]
                     )
                 else:
-                    prompt = assembler(question, modality="vision")
+                    prompt = assembler(question, modality="multimodal")
         else:
             # If no evidence, always default to a standard vision prompt
             if len(demonstrations[i]) != 0:
@@ -203,6 +210,7 @@ def run_model(
             data["img_path"] = image_paths[i]
             data["ground_truth"] = ground_truth[i]
             data["output"] = output
+            data["confidence"]=confidence_levels[i]
             save_result(data, results_json)
             time.sleep(sleep)
 
@@ -218,6 +226,7 @@ def run_fallback_model(
     evidence_idx=[],
     keyword_image_embeddings=[],
     story_evidence=[],
+    confidence_levels=[],
     client=None,
     max_tokens=50,
     temperature=0.2,
@@ -236,6 +245,7 @@ def run_fallback_model(
         evidence_idx (list): the index of the evidence to use
         keyword_image_embeddings (list): a list of keyword image embeddings
         story_evidence (list): a list of story evidence
+        confidence_levels (list): a list of confidence levels
         client  (object): the Azure OpenAI client object. Only required for gpt4 predictions
         max_tokens (int): the maximum number of tokens to generate as output
         temperature (float): the temperature of the model. Lower values make the output more deterministic
@@ -259,9 +269,9 @@ def run_fallback_model(
 
     # Main loop
     for i in tqdm(range(len(image_paths))):
-
         story_based_evidence = story_evidence.get(i, None)
         if story_based_evidence:
+            print (f"{i+1}. prediction has used STORY!")
             story_evidence_subset = [
                     ev for ev in evidence if ev["image path"] == image_paths[i] and ev["downloaded"]
                 ]
@@ -299,5 +309,10 @@ def run_fallback_model(
             data["img_path"] = image_paths[i]
             data["ground_truth"] = ground_truth[i]
             data["output"] = output
+            if story_based_evidence:
+                data["STORY"] = True
+            else:
+                data["STORY"] = False
+            data["confidence"] = confidence_levels[i]
             save_result(data, results_json)
             time.sleep(sleep)

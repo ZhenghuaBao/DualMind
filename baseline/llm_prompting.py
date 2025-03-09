@@ -107,6 +107,7 @@ def assemble_prompt_gpt4(
     if len(evidence) != 0:
         prompt += get_evidence_prompt(evidence)
     prompt += "Question: " + question + "\n"
+    prompt += "If no answer can be generated at all return NaN.\n"
     prompt += "Answer: "
     if answer:
         prompt += answer + "\n"

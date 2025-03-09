@@ -158,7 +158,7 @@ def get_valid_images(folder_path):
 
 
 def download_images(image_url, filename):
-    save_directory = "dataset/keyword_images/test"
+    save_directory = "dataset/content_keyword_images"
 
     # Ensure the directory exists
     os.makedirs(save_directory, exist_ok=True)
@@ -196,9 +196,18 @@ def download_images(image_url, filename):
 
 
 def classify_similarity(cosine_score):
-    if 0.8 <= cosine_score <= 1.0:
+    if 0.7 < cosine_score <= 1.0:
         return "High"
-    elif 0.5 <= cosine_score < 0.8:
+    elif 0.4 < cosine_score <= 0.7:
         return "Medium"
     else:
         return "Low"
+
+def classify_confidence_level(confidence_score):
+    if 2 < confidence_score <= 3:
+        return "High"
+    elif 1 < confidence_score <= 2:
+        return "Medium"
+    else:
+        return "Low"
+
