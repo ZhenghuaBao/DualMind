@@ -8,6 +8,8 @@ from baseline.answer_generation import *
 from baseline.generation_utils import *
 from baseline.llm_prompting import *
 from dotenv import load_dotenv
+from urllib.parse import urlparse
+from utils import load_json, classify_confidence_level
 
 
 # Export your OpenAI API in your environment for later use
@@ -118,24 +120,65 @@ if __name__ == "__main__":
     else:
         ground_truth = [t[args.task] for t in task_test]
 
+    # NOTE: Do this step in other files probably is more suitable
+    # Loading the MBFC database
+    with open("dataset/MBFC Bias Database 12-12-24.json", "r") as file:
+        mbfc_data = json.load(file)
+
+    # Create {domain: credibility} quick lookup table  
+    credibility_lookup = {entry["Domain"]: entry["Credibility"] for entry in mbfc_data}
+
+    def get_credibility(url):
+        """Obtain the main domain name from the URL and query the trustworthiness of MBFC."""
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc.replace("www.", "")  # remove 'www.'
+        return credibility_lookup.get(domain, "Unknown")  # if cant find, return Unknown
+
+    # Mapping dictionary including 'Unknown'
+    confidence_map = {'High': 3, 'Medium': 2, 'Low': 1, 'Unknown': 1}  
+
     # Load embeddings and evidence
-    clip_evidence_embeddings = np.load("dataset/embeddings/evidence_embeddings.npy")
+    clip_evidence_embeddings = np.load("dataset/embeddings/core_pipeline_evidence_embeddings.npy")
     image_embeddings = np.load("dataset/embeddings/image_embeddings.npy")
     image_embeddings_map = load_json("dataset/embeddings/image_embeddings_map.json")
-    evidence = load_json("dataset/retrieval_results/test_evidence.json")
+    evidence = load_json("dataset/retrieval_results/core_pipeline_test_evidence.json")
+    storys = load_json("dataset/retrieval_results/storys.json")
+
+    for ev in evidence:
+        url = ev['evidence url']
+        confidence = get_credibility(url)
+        ev['confidence'] = confidence 
+    
     # Select evidence and demonstrations
     evidence_idx = []
+    confidence_levels = []
     if args.modality in ["evidence", "multimodal"]:
         for i in range(len(image_paths)):
-            evidence_idx.append(
-                get_topk_evidence(
+            topk_evidence = get_topk_evidence(
                     image_paths[i],
                     evidence,
                     image_embeddings,
                     clip_evidence_embeddings,
                     image_embeddings_map,
                 )
+            evidence_idx.append(
+                topk_evidence
             )
+            
+            evs = [ev for ev in evidence if ev['image path']==image_paths[i]]
+            if len(evs) == 0:
+                confidence_levels.append('Low')
+                continue
+
+            confidence_list = []
+            for ev_idx in topk_evidence:
+                confidence_list.append(evs[ev_idx]['confidence'])
+      
+            # Convert list while ignoring 'Unknown'
+            confidence_score = np.mean([confidence_map[value] for value in confidence_list])
+            confidence_level = classify_confidence_level(confidence_score)
+
+            confidence_levels.append(confidence_level)
     # Select demonstrations
     # Keep train images that have evidence
     # images_with_evidence = [ev["image path"] for ev in evidence]
@@ -186,8 +229,10 @@ if __name__ == "__main__":
         map_manipulated,
         args.modality,
         args.model,
+        storys,
         evidence,
         evidence_idx,
+        confidence_levels,
         [],
         client,
         args.max_tokens,
