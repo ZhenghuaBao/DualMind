@@ -8,8 +8,9 @@ from openai import OpenAI
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from baseline.answer_generation import run_fallback_model
 from baseline.generation_utils import get_topk_keyword_evidence, cosine_similarity, get_topk_story
-from utils import load_json, classify_similarity
+from utils import load_json, classify_similarity, classify_confidence_level
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
@@ -115,10 +116,37 @@ if __name__ == "__main__":
     clip_keyword_images_embeddings = np.load("dataset/embeddings/keyword_image_embeddings.npy")
     clip_story_embeddings = np.load("dataset/embeddings/story_embeddings.npy")
 
+    # This is needed for getting the right index of the image 
+    keyword_images = [f for f in os.listdir("dataset/keyword_images") if f.endswith(".jpg")]
     # Select evidence and demonstrations
     evidence_idx = []
     keyword_image_embedding_idices = []
     similarity_level = []
+    story_evidence = {}
+    confidence_levels = []
+
+    # Mapping dictionary including 'Unknown'
+    confidence_map = {'High': 3, 'Medium': 2, 'Low': 1, 'Unknown': 1}  
+
+    # NOTE: Do this step in other files probably is more suitable
+    # Loading the MBFC database
+    with open("dataset/MBFC Bias Database 12-12-24.json", "r") as file:
+        mbfc_data = json.load(file)
+
+    # Create {domain: credibility} quick lookup table  
+    credibility_lookup = {entry["Domain"]: entry["Credibility"] for entry in mbfc_data}
+
+    def get_credibility(url):
+        """Obtain the main domain name from the URL and query the trustworthiness of MBFC."""
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc.replace("www.", "")  # remove 'www.'
+        return credibility_lookup.get(domain, "Unknown")  # if cant find, return Unknown
+
+    for ev in keyword_evidence:
+        url = ev['url']
+        confidence = get_credibility(url)
+        ev['confidence'] = confidence 
+
     if args.modality in ["evidence", "multimodal"]:
         for i in range(len(image_paths)):
             topk_keyword_evidence = get_topk_keyword_evidence(
@@ -128,9 +156,23 @@ if __name__ == "__main__":
                     clip_keyword_evidence_embeddings,
                     image_embeddings_map,
                 )
+            if len(topk_keyword_evidence) == 0:
+                evidence_idx.append([])
+                # No evidence provided only rely on VLM
+                confidence_levels.append("Low")
+                continue
 
+            assert len(topk_keyword_evidence) > 0, f"Did not found any matching evidence for image {image_paths[i]}."
             
             evidence = [ev for ev in keyword_evidence if ev['image path']==image_paths[i] and ev['downloaded']]
+            confidence_list = []
+            for ev_idx in topk_keyword_evidence:
+                confidence_list.append(evidence[ev_idx]['confidence'])
+
+            # Convert list while ignoring 'Unknown'
+            confidence_score = np.mean([confidence_map[value] for value in confidence_list])
+            confidence_level = classify_confidence_level(confidence_score)
+
             keyword_image_embedding_idx_local = []
             for ev_idx in topk_keyword_evidence:
                 keyword_image_embedding_idx = keyword_evidence.index(evidence[ev_idx])
@@ -139,29 +181,36 @@ if __name__ == "__main__":
 
             score = []
             for idx in keyword_image_embedding_idx_local:
-                s = cosine_similarity(image_embeddings[i], clip_keyword_images_embeddings[idx])
+                actual_idx = keyword_images.index(str(idx+1) + ".jpg")
+                s = cosine_similarity(image_embeddings[i], clip_keyword_images_embeddings[actual_idx])
                 score.append(s)
-            similarity_level.append(classify_similarity(np.mean(score)))
+            assert len(score) > 0
+
+            keyword_similarity = classify_similarity(np.mean(score))
+            # url_confidecnt = 
+            similarity_level.append(keyword_similarity)
+
+            if keyword_similarity == 'Low':
+                story_evidence_idx = get_topk_story(
+                    image_paths[i],
+                    keyword_evidence,
+                    clip_keyword_evidence_embeddings,
+                    clip_story_embeddings,
+                )
+                confidence_list = []
+                for ev_idx in story_evidence_idx:
+                    confidence_list.append(evidence[ev_idx]['confidence'])
+                # Convert list while ignoring 'Unknown'
+                confidence_score = np.mean([confidence_map[value] for value in confidence_list])
+                confidence_level = classify_confidence_level(confidence_score)
+                story_evidence[i] = story_evidence_idx
 
             evidence_idx.append(
                 topk_keyword_evidence
             )
 
-    story_evidence = {}
-
-    for idx, l in enumerate(similarity_level):
-        # If the score of selected evidence images is too low
-        if l == "Low":
-            story_evidence[idx] = get_topk_story(
-                image_paths[i],
-                keyword_evidence,
-                clip_keyword_evidence_embeddings,
-                clip_story_embeddings,
-                k=1
-            )
-        else:
-            continue
-
+            confidence_levels.append(confidence_level)
+    
     # Run the main loop
     run_fallback_model(
         image_paths,
@@ -174,6 +223,7 @@ if __name__ == "__main__":
         evidence_idx,
         clip_keyword_images_embeddings,
         story_evidence,
+        confidence_levels,
         client,
         args.max_tokens,
         args.temperature,
