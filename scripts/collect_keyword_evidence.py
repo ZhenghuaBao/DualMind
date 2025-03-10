@@ -11,12 +11,13 @@ from baseline.llm_prompting import gpt4_vision_prompting, gpt4_keyword_prompting
 from utils import *
 from dataset_collection.scrape_utils import *
 import argparse
+from urllib.parse import urlparse
 
 import requests
 import imghdr
 
 
-def keyword_search(query, serper_api_key, num_results=30):
+def keyword_search(query, serper_api_key, num_results=10):
     url = "https://google.serper.dev/search/images"
 
     headers = {
@@ -67,7 +68,7 @@ def keyword_search(query, serper_api_key, num_results=30):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Collect evidence using Google Reverse Image Search."
+        description="Collect evidence using Google Web Search."
     )
     parser.add_argument(
         "--openai_api_key",
@@ -85,15 +86,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image_path",
         type=str,
-        default="dataset/processed_img/",
+        default="dataset/test_img/",
         help="The folder where the images are stored.",
     )
-    # parser.add_argument(
-    #     "--raw_keyword_urls_path",
-    #     type=str,
-    #     default="dataset/retrieval_results/keyword_evidence_urls.json",
-    #     help="The json file to store the raw keyword search results.",
-    # )
     parser.add_argument(
         "--scrape_with_trafilatura",
         type=int,
@@ -103,13 +98,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--trafilatura_path",
         type=str,
-        default="dataset/retrieval_results/trafilatura_data_keyword.json",
+        default="dataset/retrieval_results/trafilatura_data_content_keyword.json",
         help="The json file to store the scraped trafilatura content as a json file.",
     )
     parser.add_argument(
         "--json_path",
         type=str,
-        default="dataset/retrieval_results/keyword_evidence.json",
+        default="dataset/retrieval_results/context_keyword_evidence.json",
         help="The json file to store the text keyword evidence as a json file.",
     )
     parser.add_argument(
@@ -138,21 +133,21 @@ if __name__ == "__main__":
 
     # Create directories if they do not exist yet
     if not "retrieval_results" in os.listdir("dataset/"):
-        os.mkdir("dataset/keyword_retrieval_results/")
+        os.mkdir("dataset/retrieval_results/")
 
     if args.collect_keyword:
         raw_keyword_results = []
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        prompt = "Please tell me the story of the given image."
+        prompt = "Please describe the context of the given image."
 
         valid_image_paths = get_valid_images(args.image_path)
-
+        c = 1
         for path in tqdm(valid_image_paths):
             # Generate STORY from the image
             story = gpt4_vision_prompting(prompt, client, path, max_tokens=200)
             # Generate a suitable query for web search
             query_prompt = (
-                "Please formulate the given story into a suitable web search query. /n Story: "
+                "Please formulate the given image description into a suitable web search query. /n Description: "
                 + str(story) + 
                 "/n Output: Return reformulated web search query."
             )
@@ -173,11 +168,28 @@ if __name__ == "__main__":
                 raw_keyword_results.append(
                    merged_dict
                 )
-
+            if c % 5 == 0:
+                if os.path.exists(args.json_path):
+                    existing_data = load_json(args.json_path)
+                    existing_data.extend(raw_keyword_results)
+                    with open(args.json_path, "w", encoding="utf-8") as file:
+                        # Save raw results
+                        json.dump(existing_data, file, indent=4)
+                        raw_keyword_results = []
+                else:
+                    with open(args.json_path, "w", encoding="utf-8") as file:
+                        # Save raw results
+                        json.dump(raw_keyword_results, file, indent=4)
+                        raw_keyword_results = []
+            c += 1
             time.sleep(args.sleep)
+        
+        existing_data = load_json(args.json_path)
+        existing_data.extend(raw_keyword_results)
+
         with open(args.json_path, "w", encoding="utf-8") as file:
             # Save raw results
-            json.dump(raw_keyword_results, file, indent=4)
+            json.dump(existing_data, file, indent=4)
 
         # # Apply filtering to the URLs to remove content produced by FC organizations and content that is not scrapable
         # selected_data = get_filtered_retrieval_keyword_results(
@@ -212,8 +224,8 @@ if __name__ == "__main__":
                     **result
                 })
             
-            # Only store in json file every 5 evidence
-            if u % 3 == 0:
+            # Only store in json file every 50 evidence
+            if u % 50 == 0:
                 save_keyword_result(output, args.trafilatura_path)
                 output = []
 
