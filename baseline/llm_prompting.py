@@ -78,6 +78,79 @@ def gpt4_vision_prompting(
     return output
 
 
+def gpt4_vision_prompting_forgery(
+    prompt,
+    client,
+    image_path,
+    map_manipulated_original={},
+    modality="multimodal",
+    temperature=0.2,
+    max_tokens=50,
+    forgery_detection_explanation=None, 
+    forgery_detection_path=None
+):
+    """
+    Prompting GPT4 multimodal.
+    """
+    deployment_name = "gpt-4o-mini"
+    content = [{"type": "text", "text": prompt}]
+    if modality in ["vision", "multimodal"]:
+        if image_path in map_manipulated_original.keys():
+            # Convert to the original image if it is detected as manipulated and an original is available
+            image_path = map_manipulated_original[image_path]
+    try:
+        with open(image_path, "rb") as image_file:
+            image64 = f"data:image/{image_path.split('.')[-1]};base64," + base64.b64encode(
+                image_file.read()).decode('utf-8')
+            content.append({"type": "image_url", "image_url": {"url": image64}})
+    except FileNotFoundError as e:
+        print(f"Error: Unable to locate the image file - {e}")
+        output = "Error: Image file not found."
+        return output
+
+    # 如果伪造检测的信息存在，将其处理成独立的提示
+    forgery_detection_content = ""
+    if forgery_detection_explanation and forgery_detection_path:
+        try:
+            with open(forgery_detection_path, "rb") as forgery_image_file:
+                forgery_image64 = f"data:image/{forgery_detection_path.split('.')[-1]};base64," + base64.b64encode(
+                    forgery_image_file.read()).decode('utf-8')
+                forgery_detection_content = (
+                    "This message is the output of the forgery detection. The image represents semantic segmentation of the "
+                    "tampered area. Please be aware that forgery detection has a high false positive rate. Ignore any areas "
+                    "that are detected as tampered if they are irrelevant to the claim stated below, even if the image shows "
+                    "forgery in those regions. Below is the explanation for the detection:\n\n"
+                    f"Forgery detection explanation: {forgery_detection_explanation}\n"
+                    f"Forgery detection image (base64 encoded): {forgery_image64}"
+                )
+        except FileNotFoundError as e:
+            print(f"Error: Unable to locate the forgery detection image file - {e}")
+            forgery_detection_content = "Error: Forgery detection image file not found."
+
+        # 添加伪造检测信息到内容
+        if forgery_detection_content:
+            forgery_detection_content_message = [{"role": "system", "content": forgery_detection_content}]
+        else:
+            forgery_detection_content_message = []
+
+    messages = [{"role": "user", "content": content}]
+    messages.extend(forgery_detection_content_message)
+
+    try:
+        completion = client.chat.completions.create(
+            model=deployment_name,
+            temperature=temperature,
+            messages=messages,
+            max_tokens=max_tokens
+        )
+        # 修正访问方式
+        output = completion.choices[0].message.content
+    except Exception as e:
+        print(f"Exception: {e}")
+        output = "Error: Unable to complete the request."
+
+    return output
+
 def assemble_prompt_gpt4(
     question, answer=None, evidence=[], demonstrations=[], modality="multimodal"
 ):
@@ -99,7 +172,7 @@ def assemble_prompt_gpt4(
     if modality == "evidence":
         prompt += "You are given online articles that used a certain image. Your task is to answer a question about the image.\n\n"
     elif modality == "story":
-        prompt += "You are given online articles that are related to the story of an image. Your task is to answer a question about the image.\n\n"
+        prompt += "You are given online articles that are related to the context of an image. Your task is to answer a question about the image.\n\n"
     elif modality == "multimodal":
         prompt += "You are given an image and online articles that used that image. Your task is to answer a question about the image using the image and the articles.\n\n"
     else:
@@ -107,7 +180,6 @@ def assemble_prompt_gpt4(
     if len(evidence) != 0:
         prompt += get_evidence_prompt(evidence)
     prompt += "Question: " + question + "\n"
-    prompt += "If no answer can be generated at all return NaN.\n"
     prompt += "Answer: "
     if answer:
         prompt += answer + "\n"

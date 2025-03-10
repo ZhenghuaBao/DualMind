@@ -79,6 +79,7 @@ def get_topk_evidence(image_path,
     #     print (ev['image path'])
     evidence = [ev for ev in evidence if ev['image path']==image_path]
     evidence_index = [evidence.index(ev) for ev in evidence if ev['image path']==image_path]
+
     if len(evidence_index)>k:
         image_index = int(image_map[image_path])
         sorted_evidence = sort_with_clip_score(image_index,
