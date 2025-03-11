@@ -157,8 +157,8 @@ def get_valid_images(folder_path):
     return valid_images
 
 
-def download_images(image_url, filename):
-    save_directory = "dataset/content_keyword_images"
+def download_images(image_url, filename, save_directory):
+    save_directory = save_directory
 
     # Ensure the directory exists
     os.makedirs(save_directory, exist_ok=True)
