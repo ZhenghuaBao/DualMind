@@ -86,7 +86,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image_path",
         type=str,
-        default="dataset/test_img/",
+        default="dataset/processed_img/",
         help="The folder where the images are stored.",
     )
     parser.add_argument(
@@ -98,13 +98,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--trafilatura_path",
         type=str,
-        default="dataset/retrieval_results/trafilatura_data_content_keyword.json",
+        default="dataset/retrieval_results/final_keyword_trafilatura_data.json",
         help="The json file to store the scraped trafilatura content as a json file.",
     )
     parser.add_argument(
         "--json_path",
         type=str,
-        default="dataset/retrieval_results/context_keyword_evidence.json",
+        default="dataset/retrieval_results/final_keyword_evidence.json",
         help="The json file to store the text keyword evidence as a json file.",
     )
     parser.add_argument(
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max_results",
         type=int,
-        default=10,
+        default=30,
         help="The maximum number of web-pages to collect with the web detection API.",
     )
     parser.add_argument(
