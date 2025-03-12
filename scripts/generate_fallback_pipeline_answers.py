@@ -79,7 +79,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.model == "gpt4":
-        client = OpenAI()
+        api_key=os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
     else:
         client = None
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     # Prepare data
     train = load_json("dataset/train.json")
     # Load test images
-    test = load_json("dataset/test_test.json")
+    test = load_json("dataset/test.json")
     task_test = [t for t in test if t[args.task] != "not enough information"]
     image_paths = [t["image path"] for t in task_test]
     if args.task == "date":
@@ -112,13 +113,13 @@ if __name__ == "__main__":
     )
     image_embeddings = np.load("dataset/embeddings/image_embeddings.npy")
     image_embeddings_map = load_json("dataset/embeddings/image_embeddings_map.json")
-    keyword_evidence = load_json("dataset/retrieval_results/processed_trafilatura_data_content_keyword.json")
-    clip_keyword_images_embeddings = np.load("dataset/embeddings/content_keyword_image_embeddings.npy")
-    clip_story_embeddings = np.load("dataset/embeddings/content_story_embeddings.npy")
-    keyword_image_embeddings_map = load_json("dataset/embeddings/content_keyword_image_embeddings_map.json")
+    keyword_evidence = load_json("dataset/retrieval_results/final_processed_keyword_trafilatura_data.json")
+    clip_keyword_images_embeddings = np.load("dataset/embeddings/final_keyword_image_embeddings.npy")
+    clip_story_embeddings = np.load("dataset/embeddings/final_story_embeddings.npy")
+    keyword_image_embeddings_map = load_json("dataset/embeddings/final_keyword_image_embeddings_map.json")
 
     # This is needed for getting the right index of the image 
-    keyword_images = [f for f in os.listdir("dataset/content_keyword_images") if f.endswith(".jpg")]
+    keyword_images = [f for f in os.listdir("dataset/final_keyword_images") if f.endswith(".jpg")]
     # Select evidence and demonstrations
     evidence_idx = []
     keyword_image_embedding_idices = []
@@ -182,7 +183,7 @@ if __name__ == "__main__":
 
             score = []
             for idx in keyword_image_embedding_idx_local:
-                actual_path = "dataset/content_keyword_images/" + str(idx+1) + ".jpg"
+                actual_path = "dataset/final_keyword_images/" + str(idx+1) + ".jpg"
                 actual_idx = int(keyword_image_embeddings_map[actual_path])
                 
                 s = cosine_similarity(image_embeddings[i], clip_keyword_images_embeddings[actual_idx])
