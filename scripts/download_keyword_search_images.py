@@ -13,9 +13,9 @@ if __name__ == "__main__":
     directory = "dataset/final_keyword_images"
 
     # Clear the folder before downloading new images
-    if os.path.exists(directory):
-        shutil.rmtree(directory)  # Remove the entire folder
-    os.makedirs(directory)  # Recreate the empty folder
+    # if os.path.exists(directory):
+    #     shutil.rmtree(directory)  # Remove the entire folder
+    # os.makedirs(directory)  # Recreate the empty folder
 
     keyword_evidence = load_json("dataset/retrieval_results/final_keyword_trafilatura_data.json")
 
@@ -23,6 +23,11 @@ if __name__ == "__main__":
     counter = 1
 
     for image in tqdm(images):
+        current_img = str(counter) + ".jpg"
+        img_path = os.path.join(directory, current_img)
+        if os.path.exists(img_path):
+            counter += 1
+            continue
         download_images(image, str(counter) + ".jpg", directory)
         counter += 1
     
@@ -39,3 +44,5 @@ if __name__ == "__main__":
     with open("dataset/retrieval_results/final_processed_keyword_trafilatura_data.json", "w", encoding="utf-8") as file:
             # Save raw results
             json.dump(keyword_evidence, file, indent=4)
+
+    
