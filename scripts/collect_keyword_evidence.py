@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-from google.cloud import vision
 import os
 from openai import OpenAI
 from tqdm import tqdm
@@ -7,28 +6,25 @@ import time
 import sys
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
-from baseline.llm_prompting import gpt4_vision_prompting, gpt4_keyword_prompting, gpt4_prompting
+from baseline.llm_prompting import (
+    gpt4_vision_prompting,
+    gpt4_keyword_prompting,
+    gpt4_prompting,
+)
 from utils import *
 from dataset_collection.scrape_utils import *
 import argparse
-from urllib.parse import urlparse
 
 import requests
-import imghdr
 
 
+# Function to perform web search
 def keyword_search(query, serper_api_key, num_results=10):
     url = "https://google.serper.dev/search/images"
 
-    headers = {
-        "X-API-KEY": serper_api_key,
-        "Content-Type": "application/json"
-    }
+    headers = {"X-API-KEY": serper_api_key, "Content-Type": "application/json"}
 
-    payload = {
-        "q": query,
-        "num": num_results  # Increase the number of results
-    }
+    payload = {"q": query, "num": num_results}  # Increase the number of results
 
     response = requests.post(url, json=payload, headers=headers)
 
@@ -44,7 +40,6 @@ def keyword_search(query, serper_api_key, num_results=10):
             source = result.get("source")
             link = result.get("link")
             position = result.get("position")
-            
 
             r = {
                 "title": title,
@@ -54,11 +49,7 @@ def keyword_search(query, serper_api_key, num_results=10):
                 "position": position,
             }
 
-            # print(f"Title: {title}\nSource: {source}\nURL: {link}\nImage: {image}\nPosition: {position}\n")
-
             results.append(r)
-
-            # print("-" * 50)
 
         return results
     else:
@@ -126,6 +117,7 @@ if __name__ == "__main__":
         help="The waiting time between two web detection API calls",
     )
 
+    # To load api keys or any environmental variable from .env
     load_dotenv()
 
     args = parser.parse_args()
@@ -148,15 +140,13 @@ if __name__ == "__main__":
             # Generate a suitable query for web search
             query_prompt = (
                 "Please formulate the given image description into a suitable web search query. /n Description: "
-                + str(story) + 
-                "/n Output: Return reformulated web search query."
+                + str(story)
+                + "/n Output: Return reformulated web search query."
             )
             keyword_query, _ = gpt4_prompting(query_prompt, client)
 
             # Getting keyword search results
-            keyword_search_results = keyword_search(
-                keyword_query, serper_api_key
-            )
+            keyword_search_results = keyword_search(keyword_query, serper_api_key)
 
             for r in keyword_search_results:
                 merged_dict = {
@@ -165,9 +155,7 @@ if __name__ == "__main__":
                     "query": keyword_query,
                     **r,  # merges all key/value pairs from r
                 }
-                raw_keyword_results.append(
-                   merged_dict
-                )
+                raw_keyword_results.append(merged_dict)
             if c % 5 == 0:
                 if os.path.exists(args.json_path):
                     existing_data = load_json(args.json_path)
@@ -183,23 +171,13 @@ if __name__ == "__main__":
                         raw_keyword_results = []
             c += 1
             time.sleep(args.sleep)
-        
+
         existing_data = load_json(args.json_path)
         existing_data.extend(raw_keyword_results)
 
         with open(args.json_path, "w", encoding="utf-8") as file:
             # Save raw results
             json.dump(existing_data, file, indent=4)
-
-        # # Apply filtering to the URLs to remove content produced by FC organizations and content that is not scrapable
-        # selected_data = get_filtered_retrieval_keyword_results(
-        #     args.raw_keyword_urls_path
-        # )
-
-    # else:
-    #     selected_data = get_filtered_retrieval_keyword_results(
-    #         args.raw_keyword_urls_path
-    #     )
 
     selected_data = load_json(args.json_path)
 
@@ -217,28 +195,18 @@ if __name__ == "__main__":
             if isinstance(result, str):
                 pass
             else:
-                output.append({
-                    "image path": image_paths[u],
-                    "story": story[u],
-                    "query": query[u],
-                    **result
-                })
-            
+                output.append(
+                    {
+                        "image path": image_paths[u],
+                        "story": story[u],
+                        "query": query[u],
+                        **result,
+                    }
+                )
+
             # Only store in json file every 50 evidence
             if u % 50 == 0:
                 save_keyword_result(output, args.trafilatura_path)
                 output = []
 
     # NOTE: After that we need to download keyword images into keyword_images folder -> download_keyword_search_images.py
-
-    
-    # Save all results in a Pandas Dataframe
-    # evidence_trafilatura = load_json(args.trafilatura_path)
-
-    # df = pd.DataFrame(evidence_trafilatura)
-    # df = df.fillna("")
-    # df.head()
-    # evidence = df.to_dict(orient="records")
-
-    # with open(args.json_path, "w") as file:
-    #     json.dump(evidence, file, indent=4)
