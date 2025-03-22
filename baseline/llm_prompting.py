@@ -97,7 +97,7 @@ def gpt4_vision_prompting_with_forgery_detection_(
 
     if modality in ['vision', 'multimodal']:
         if image_path in map_manipulated_original:
-            # 转换为原始图像（如果检测到图像已被操控且有对应的原始图像）
+            # Convert to the original image (if the image is detected as manipulated and the original image is available)
             image_path = map_manipulated_original[image_path]
 
         try:
@@ -111,7 +111,7 @@ def gpt4_vision_prompting_with_forgery_detection_(
             return output
     messages = [{"role": "user", "content": content}]
 
-    # 如果伪造检测的信息存在，将其处理成独立的提示
+    # If forgery detection information exists, process it as a separate prompt
     forgery_detection_content = "Forgery detector did not find any forgery part in this image."
     if forgery_detection_explanation and forgery_detection_path:
         try:
@@ -131,7 +131,7 @@ def gpt4_vision_prompting_with_forgery_detection_(
             # print(f"Error: Unable to locate the forgery detection image file - {e}")
             # forgery_detection_content = "Forgery detector did not find any forgery part in this image."
 
-    # 添加伪造检测信息到内容
+    # Add forgery detection information to content
     forgery_detection_content_message = [{"role": "user", "content": forgery_detection_content}]
     messages.extend(forgery_detection_content_message)
 
@@ -167,10 +167,10 @@ def gpt4_vision_prompting_with_forgery_detection(
     deployment_name = 'gpt-4-turbo'
     content = [{"type": "text", "text": prompt}]
 
-    # 处理图像
+    # Process the image
     if modality in ['vision', 'multimodal']:
         if image_path in map_manipulated_original:
-            # 转换为原始图像（如果检测到图像已被操控且有对应的原始图像）
+            # Convert to the original image (if the image is detected as manipulated and the original image is available)
             image_path = map_manipulated_original[image_path]
 
         try:
@@ -183,14 +183,14 @@ def gpt4_vision_prompting_with_forgery_detection(
             output = "Error: Image file not found."
             return output
 
-    # 处理伪造检测内容并将伪造检测图像单独添加到content中
+    # Process forgery detection content and add forgery detection image separately to content
     if forgery_detection_explanation and forgery_detection_path:
         try:
             with open(forgery_detection_path, "rb") as forgery_image_file:
                 forgery_image64 = f"data:image/{forgery_detection_path.split('.')[-1]};base64," + base64.b64encode(
                     forgery_image_file.read()).decode('utf-8')
 
-                # 将伪造检测图像单独作为image_url添加
+                # Add forgery detection image separately as image_url
                 forgery_detection_content = (
                     "This message is the output of the forgery detection. The image represents semantic segmentation of the "
                     "tampered area. Please be aware that forgery detection has a high false positive rate. Ignore any areas "
@@ -199,17 +199,17 @@ def gpt4_vision_prompting_with_forgery_detection(
                     f"Forgery detection explanation: {forgery_detection_explanation}"
                 )
 
-                # 将伪造检测说明添加到content
+                # Add forgery detection explanation to content
                 content.append({"type": "text", "text": forgery_detection_content})
                 content.append({"type": "image_url", "image_url": {"url": forgery_image64}})
 
         except FileNotFoundError as e:
             pass
-            # 如果找不到伪造检测图像，则保持默认提示
+            # If forgery detection image is not found, retain the default prompt
             forgery_detection_content = "Forgery detector did not find any forgery part in this image."
             content.append({"type": "text", "text": forgery_detection_content})
 
-    # 创建消息
+    # Create messages
     messages = [{"role": "user", "content": content}]
 
     try:
@@ -219,7 +219,7 @@ def gpt4_vision_prompting_with_forgery_detection(
             messages=messages,
             max_tokens=max_tokens
         )
-        # 获取模型的输出
+        # Get the model's output
         output = completion.choices[0].message.content
         print(output)
     except Exception as e:
