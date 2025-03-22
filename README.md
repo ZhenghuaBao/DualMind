@@ -24,7 +24,7 @@ Experiments demonstrate that DualMind significantly improves evidence retrieval 
 ### Demo output
 
 <p align="center">
-  <img width="100%" src="figs/1.png" alt="header" />
+  <img width="80%" src="figs/1.png" alt="header" />
 </p>
 
 
@@ -51,7 +51,7 @@ $ python scripts/build_dataset_from_url.py
 ## Pipeline
 
 <p align="center">
-  <img width="100%" src="figs/2.png" alt="header" />
+  <img width="80%" src="figs/2.png" alt="header" />
 </p>
 
 You can generate answers for a specific pillar. The plus pillar includes a **confidence score** and **forgery explanation**. For example, to generate answers for the **Date** pillar using multimodal zero-shot LLaVA:
