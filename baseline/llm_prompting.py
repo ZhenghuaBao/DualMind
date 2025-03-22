@@ -25,6 +25,7 @@ def gpt4_prompting(content, client, max_tokens=1000):
     usage = completion.usage.total_tokens
     return output, usage
 
+
 def gpt4_keyword_prompting(system_prompt, content, client, max_tokens=1000):
     """
     Prompting the standard GPT4 model. Used for data labeling.
@@ -32,15 +33,14 @@ def gpt4_keyword_prompting(system_prompt, content, client, max_tokens=1000):
     deployment_name = "gpt-4o-mini"
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": content}
-        ]
+        {"role": "user", "content": content},
+    ]
     completion = client.chat.completions.create(
         model=deployment_name, messages=messages, max_tokens=max_tokens
     )
     output = completion.choices[0].message.content
     usage = completion.usage.total_tokens
     return output, usage
-
 
 
 def gpt4_vision_prompting(
@@ -78,6 +78,7 @@ def gpt4_vision_prompting(
     return output
 
 
+# Special prompting for integrating forgery detection into prompt
 def gpt4_vision_prompting_forgery(
     prompt,
     client,
@@ -86,8 +87,8 @@ def gpt4_vision_prompting_forgery(
     modality="multimodal",
     temperature=0.2,
     max_tokens=50,
-    forgery_detection_explanation=None, 
-    forgery_detection_path=None
+    forgery_detection_explanation=None,
+    forgery_detection_path=None,
 ):
     """
     Prompting GPT4 multimodal.
@@ -100,8 +101,10 @@ def gpt4_vision_prompting_forgery(
             image_path = map_manipulated_original[image_path]
     try:
         with open(image_path, "rb") as image_file:
-            image64 = f"data:image/{image_path.split('.')[-1]};base64," + base64.b64encode(
-                image_file.read()).decode('utf-8')
+            image64 = (
+                f"data:image/{image_path.split('.')[-1]};base64,"
+                + base64.b64encode(image_file.read()).decode("utf-8")
+            )
             content.append({"type": "image_url", "image_url": {"url": image64}})
     except FileNotFoundError as e:
         print(f"Error: Unable to locate the image file - {e}")
@@ -113,8 +116,10 @@ def gpt4_vision_prompting_forgery(
     if forgery_detection_explanation and forgery_detection_path:
         try:
             with open(forgery_detection_path, "rb") as forgery_image_file:
-                forgery_image64 = f"data:image/{forgery_detection_path.split('.')[-1]};base64," + base64.b64encode(
-                    forgery_image_file.read()).decode('utf-8')
+                forgery_image64 = (
+                    f"data:image/{forgery_detection_path.split('.')[-1]};base64,"
+                    + base64.b64encode(forgery_image_file.read()).decode("utf-8")
+                )
                 forgery_detection_content = (
                     "This message is the output of the forgery detection. The image represents semantic segmentation of the "
                     "tampered area. Please be aware that forgery detection has a high false positive rate. Ignore any areas "
@@ -129,7 +134,9 @@ def gpt4_vision_prompting_forgery(
 
         # 添加伪造检测信息到内容
         if forgery_detection_content:
-            forgery_detection_content_message = [{"role": "system", "content": forgery_detection_content}]
+            forgery_detection_content_message = [
+                {"role": "system", "content": forgery_detection_content}
+            ]
         else:
             forgery_detection_content_message = []
 
@@ -141,7 +148,7 @@ def gpt4_vision_prompting_forgery(
             model=deployment_name,
             temperature=temperature,
             messages=messages,
-            max_tokens=max_tokens
+            max_tokens=max_tokens,
         )
         # 修正访问方式
         output = completion.choices[0].message.content
@@ -150,6 +157,7 @@ def gpt4_vision_prompting_forgery(
         output = "Error: Unable to complete the request."
 
     return output
+
 
 def assemble_prompt_gpt4(
     question, answer=None, evidence=[], demonstrations=[], modality="multimodal"
