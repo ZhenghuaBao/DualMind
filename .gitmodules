@@ -1,0 +1,3 @@
+[submodule "forgery_detection/FakeShield"]
+	path = forgery_detection/FakeShield
+	url = https://github.com/zhipeixu/FakeShield.git
