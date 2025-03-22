@@ -33030,5 +33030,860 @@
             -36.0,
             -60.0
         ]
+    },
+    {
+        "query": "wisconsin",
+        "geonameId": 5279468,
+        "name": "Wisconsin",
+        "toponymName": "Wisconsin",
+        "countryName": "United States",
+        "coordinates": [
+            44.50024,
+            -90.00041
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Wisconsin",
+        "adminName1": "Wisconsin"
+    },
+    {
+        "query": "wisconsin",
+        "geonameId": 5279422,
+        "name": "Wisconsin Dells",
+        "toponymName": "Wisconsin Dells",
+        "countryName": "United States",
+        "coordinates": [
+            43.62748,
+            -89.77096
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Wisconsin;Columbia;City of Wisconsin Dells;Wisconsin Dells",
+        "adminName1": "Wisconsin"
+    },
+    {
+        "query": "Korea",
+        "geonameId": 1835841,
+        "name": "South Korea",
+        "toponymName": "Republic of Korea",
+        "countryName": "South Korea",
+        "coordinates": [
+            36.5,
+            127.75
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;Asia;South Korea",
+        "adminName1": ""
+    },
+    {
+        "query": "Korea",
+        "geonameId": 1873107,
+        "name": "North Korea",
+        "toponymName": "Democratic People\u2019s Republic of Korea",
+        "countryName": "North Korea",
+        "coordinates": [
+            40.0,
+            127.0
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;Asia;North Korea",
+        "adminName1": ""
+    },
+    {
+        "query": "Colorado",
+        "geonameId": 5417618,
+        "name": "Colorado",
+        "toponymName": "Colorado",
+        "countryName": "United States",
+        "coordinates": [
+            39.00027,
+            -105.50083
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Colorado",
+        "adminName1": "Colorado"
+    },
+    {
+        "query": "Colorado",
+        "geonameId": 5417598,
+        "name": "Colorado Springs",
+        "toponymName": "Colorado Springs",
+        "countryName": "United States",
+        "coordinates": [
+            38.83388,
+            -104.82136
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Colorado;El Paso;Colorado Springs",
+        "adminName1": "Colorado"
+    },
+    {
+        "query": "Patagonia",
+        "geonameId": 3841798,
+        "name": "Patagonia",
+        "toponymName": "Patagonia",
+        "countryName": "Argentina",
+        "coordinates": [
+            -44.0,
+            -68.0
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;South America;Argentina;Patagonia",
+        "adminName1": ""
+    },
+    {
+        "query": "Middle east",
+        "geonameId": 6269133,
+        "name": "Middle East",
+        "toponymName": "Middle East",
+        "countryName": null,
+        "coordinates": [
+            33.13906,
+            35.85869
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;Middle East",
+        "adminName1": ""
+    },
+    {
+        "query": "Solana Beach",
+        "geonameId": 5396974,
+        "name": "Solana Beach",
+        "toponymName": "Solana Beach",
+        "countryName": "United States",
+        "coordinates": [
+            32.99115,
+            -117.27115
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;San Diego;Solana Beach",
+        "adminName1": "California"
+    },
+    {
+        "query": "Solana Beach",
+        "geonameId": 11788974,
+        "name": "City of Solana Beach",
+        "toponymName": "City of Solana Beach",
+        "countryName": "United States",
+        "coordinates": [
+            32.99452,
+            -117.2579
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;California;San Diego;City of Solana Beach",
+        "adminName1": "California"
+    },
+    {
+        "query": "Desert",
+        "geonameId": 5380626,
+        "name": "Palm Desert",
+        "toponymName": "Palm Desert",
+        "countryName": "United States",
+        "coordinates": [
+            33.72255,
+            -116.37697
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;Riverside;Palm Desert",
+        "adminName1": "California"
+    },
+    {
+        "query": "Desert",
+        "geonameId": 5342710,
+        "name": "Desert Hot Springs",
+        "toponymName": "Desert Hot Springs",
+        "countryName": "United States",
+        "coordinates": [
+            33.96173,
+            -116.50353
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;Riverside;Desert Hot Springs",
+        "adminName1": "California"
+    },
+    {
+        "query": "Serbia",
+        "geonameId": 6290252,
+        "name": "Serbia",
+        "toponymName": "Serbia",
+        "countryName": "Serbia",
+        "coordinates": [
+            44.81892,
+            20.45998
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;Europe;Serbia",
+        "adminName1": ""
+    },
+    {
+        "query": "Serbia",
+        "geonameId": 11776652,
+        "name": "\u0160umadija and Western Serbia",
+        "toponymName": "\u0160umadija and Western Serbia",
+        "countryName": "Serbia",
+        "coordinates": [
+            43.66787,
+            20.39063
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;Europe;Serbia;Central Serbia;\u0160umadija and Western Serbia",
+        "adminName1": "Central Serbia"
+    },
+    {
+        "query": "Los angeles",
+        "geonameId": 5368361,
+        "name": "Los Angeles",
+        "toponymName": "Los Angeles",
+        "countryName": "United States",
+        "coordinates": [
+            34.05223,
+            -118.24368
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;Los Angeles;Los Angeles",
+        "adminName1": "California"
+    },
+    {
+        "query": "Los angeles",
+        "geonameId": 6955103,
+        "name": "Los Angeles-Long Beach-Santa Ana",
+        "toponymName": "Los Angeles-Long Beach-Santa Ana",
+        "countryName": "United States",
+        "coordinates": [
+            33.88638,
+            -118.04535
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;North America;United States;California;Los Angeles;Los Angeles-Long Beach-Santa Ana",
+        "adminName1": "California"
+    },
+    {
+        "query": "Cape",
+        "geonameId": 3369157,
+        "name": "Cape Town",
+        "toponymName": "Cape Town",
+        "countryName": "South Africa",
+        "coordinates": [
+            -33.92584,
+            18.42322
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Africa;South Africa;Western Cape;City of Cape Town;City of Cape Town;Cape Town",
+        "adminName1": "Western Cape"
+    },
+    {
+        "query": "Cape",
+        "geonameId": 2302357,
+        "name": "Cape Coast",
+        "toponymName": "Cape Coast",
+        "countryName": "Ghana",
+        "coordinates": [
+            5.10535,
+            -1.2466
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Africa;Ghana;Central Region;Cape Coast;Cape Coast",
+        "adminName1": "Central"
+    },
+    {
+        "query": "Daytona",
+        "geonameId": 4152872,
+        "name": "Daytona",
+        "toponymName": "Daytona Beach",
+        "countryName": "United States",
+        "coordinates": [
+            29.21081,
+            -81.02283
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Florida;Volusia;Daytona",
+        "adminName1": "Florida"
+    },
+    {
+        "query": "Daytona",
+        "geonameId": 4173431,
+        "name": "South Daytona",
+        "toponymName": "South Daytona",
+        "countryName": "United States",
+        "coordinates": [
+            29.16582,
+            -81.0045
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Florida;Volusia;South Daytona",
+        "adminName1": "Florida"
+    },
+    {
+        "query": "Istanbul",
+        "geonameId": 745044,
+        "name": "Istanbul",
+        "toponymName": "Istanbul",
+        "countryName": "T\u00fcrkiye",
+        "coordinates": [
+            41.01384,
+            28.94966
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Asia;T\u00fcrkiye;Istanbul;Istanbul",
+        "adminName1": "Istanbul"
+    },
+    {
+        "query": "Istanbul",
+        "geonameId": 6299743,
+        "name": "Istanbul Atat\u00fcrk Airport",
+        "toponymName": "Istanbul Atat\u00fcrk Airport",
+        "countryName": "T\u00fcrkiye",
+        "coordinates": [
+            40.97692,
+            28.81461
+        ],
+        "fcl": "S",
+        "fclName": "spot, building, farm",
+        "hierarchy": "Earth;Asia;T\u00fcrkiye;Istanbul;Istanbul Atat\u00fcrk Airport",
+        "adminName1": "Istanbul"
+    },
+    {
+        "query": "Seattle",
+        "geonameId": 5809844,
+        "name": "Seattle",
+        "toponymName": "Seattle",
+        "countryName": "United States",
+        "coordinates": [
+            47.60621,
+            -122.33207
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Washington;King;City of Seattle;Seattle",
+        "adminName1": "Washington"
+    },
+    {
+        "query": "Seattle",
+        "geonameId": 12213261,
+        "name": "Seattle-Tacoma-Bellevue, WA",
+        "toponymName": "Seattle-Tacoma-Bellevue, WA Metro Area",
+        "countryName": "United States",
+        "coordinates": [
+            47.55747,
+            -121.88143
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;North America;United States;Washington;Seattle-Tacoma-Bellevue, WA",
+        "adminName1": "Washington"
+    },
+    {
+        "query": "San bernardino",
+        "geonameId": 5391710,
+        "name": "San Bernardino",
+        "toponymName": "San Bernardino",
+        "countryName": "United States",
+        "coordinates": [
+            34.10834,
+            -117.28977
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;San Bernardino;San Bernardino",
+        "adminName1": "California"
+    },
+    {
+        "query": "Oklahoma",
+        "geonameId": 4544379,
+        "name": "Oklahoma",
+        "toponymName": "Oklahoma",
+        "countryName": "United States",
+        "coordinates": [
+            35.49209,
+            -97.50328
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Oklahoma",
+        "adminName1": "Oklahoma"
+    },
+    {
+        "query": "Oklahoma",
+        "geonameId": 4544349,
+        "name": "Oklahoma City",
+        "toponymName": "Oklahoma City",
+        "countryName": "United States",
+        "coordinates": [
+            35.46756,
+            -97.51643
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Oklahoma;Oklahoma;Oklahoma City",
+        "adminName1": "Oklahoma"
+    },
+    {
+        "query": "New York City",
+        "geonameId": 5128581,
+        "name": "New York",
+        "toponymName": "New York City",
+        "countryName": "United States",
+        "coordinates": [
+            40.71427,
+            -74.00597
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;New York;New York",
+        "adminName1": "New York"
+    },
+    {
+        "query": "La Porte",
+        "geonameId": 4863820,
+        "name": "La Porte City",
+        "toponymName": "La Porte City",
+        "countryName": "United States",
+        "coordinates": [
+            42.31499,
+            -92.19213
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Iowa;Black Hawk;Big Creek Township;La Porte City",
+        "adminName1": "Iowa"
+    },
+    {
+        "query": "Honolulu",
+        "geonameId": 5856195,
+        "name": "Honolulu",
+        "toponymName": "Honolulu",
+        "countryName": "United States",
+        "coordinates": [
+            21.30694,
+            -157.85833
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Hawaii;Honolulu;Honolulu",
+        "adminName1": "Hawaii"
+    },
+    {
+        "query": "Honolulu",
+        "geonameId": 5856194,
+        "name": "Honolulu",
+        "toponymName": "Honolulu County",
+        "countryName": "United States",
+        "coordinates": [
+            21.45543,
+            -157.96138
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Hawaii;Honolulu",
+        "adminName1": "Hawaii"
+    },
+    {
+        "query": "Munich",
+        "geonameId": 2867714,
+        "name": "Munich",
+        "toponymName": "Munich",
+        "countryName": "Germany",
+        "coordinates": [
+            48.13743,
+            11.57549
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Europe;Germany;Bavaria;Upper Bavaria;Munich, Urban District;Munich;Munich",
+        "adminName1": "Bavaria"
+    },
+    {
+        "query": "Indiana",
+        "geonameId": 12213487,
+        "name": "Indianapolis-Carmel-Anderson, IN Metro Area",
+        "toponymName": "Indianapolis-Carmel-Anderson, IN Metro Area",
+        "countryName": "United States",
+        "coordinates": [
+            39.74743,
+            -86.20614
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;North America;United States;Indiana;Indianapolis-Carmel-Anderson, IN Metro Area",
+        "adminName1": "Indiana"
+    },
+    {
+        "query": "Mount",
+        "geonameId": 2104222,
+        "name": "Mount Popomanaseu",
+        "toponymName": "Mount Popomanaseu",
+        "countryName": "Solomon Islands",
+        "coordinates": [
+            -9.70346,
+            160.06197
+        ],
+        "fcl": "T",
+        "fclName": "mountain,hill,rock,... ",
+        "hierarchy": "Earth;Oceania;Solomon Islands;Mount Popomanaseu",
+        "adminName1": ""
+    },
+    {
+        "query": "Mount",
+        "geonameId": 2176638,
+        "name": "Mount Bates",
+        "toponymName": "Mount Bates",
+        "countryName": "Norfolk Island",
+        "coordinates": [
+            -29.01124,
+            167.9401
+        ],
+        "fcl": "T",
+        "fclName": "mountain,hill,rock,... ",
+        "hierarchy": "Earth;Oceania;Norfolk Island;Mount Bates",
+        "adminName1": ""
+    },
+    {
+        "query": "montana",
+        "geonameId": 5667009,
+        "name": "Montana",
+        "toponymName": "Montana",
+        "countryName": "United States",
+        "coordinates": [
+            47.00025,
+            -109.75102
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Montana",
+        "adminName1": "Montana"
+    },
+    {
+        "query": "montana",
+        "geonameId": 729114,
+        "name": "Montana",
+        "toponymName": "Montana",
+        "countryName": "Bulgaria",
+        "coordinates": [
+            43.4125,
+            23.225
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Europe;Bulgaria;Montana;Montana;Montana",
+        "adminName1": "Montana"
+    },
+    {
+        "query": "Venice",
+        "geonameId": 3164603,
+        "name": "Venice",
+        "toponymName": "Venice",
+        "countryName": "Italy",
+        "coordinates": [
+            45.43713,
+            12.33265
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Europe;Italy;Veneto;Venice;Venice;Venice",
+        "adminName1": "Veneto"
+    },
+    {
+        "query": "Venice",
+        "geonameId": 4251958,
+        "name": "Venice",
+        "toponymName": "Venice",
+        "countryName": "United States",
+        "coordinates": [
+            38.67227,
+            -90.16983
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Illinois;Madison;Venice Township;Venice",
+        "adminName1": "Illinois"
+    },
+    {
+        "query": "Oregon",
+        "geonameId": 5744337,
+        "name": "Oregon",
+        "toponymName": "Oregon",
+        "countryName": "United States",
+        "coordinates": [
+            44.00013,
+            -120.50139
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Oregon",
+        "adminName1": "Oregon"
+    },
+    {
+        "query": "North sea",
+        "geonameId": 2960848,
+        "name": "North Sea",
+        "toponymName": "North Sea",
+        "countryName": null,
+        "coordinates": [
+            55.33333,
+            3.0
+        ],
+        "fcl": "H",
+        "fclName": "stream, lake, ...",
+        "hierarchy": "Earth;North Sea",
+        "adminName1": ""
+    },
+    {
+        "query": "Siaya",
+        "geonameId": 180320,
+        "name": "Siaya County",
+        "toponymName": "Siaya",
+        "countryName": "Kenya",
+        "coordinates": [
+            0.105,
+            34.302
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;Africa;Kenya;Siaya County",
+        "adminName1": "Siaya County"
+    },
+    {
+        "query": "Siaya",
+        "geonameId": 383388,
+        "name": "Siaya",
+        "toponymName": "Siaya",
+        "countryName": "Kenya",
+        "coordinates": [
+            0.0607,
+            34.28806
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Africa;Kenya;Siaya County;Siaya",
+        "adminName1": "Siaya County"
+    },
+    {
+        "query": "Ferguson",
+        "geonameId": 4386387,
+        "name": "Ferguson",
+        "toponymName": "Ferguson",
+        "countryName": "United States",
+        "coordinates": [
+            38.74422,
+            -90.30539
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Missouri;Saint Louis;Township of Norwood;Ferguson",
+        "adminName1": "Missouri"
+    },
+    {
+        "query": "Ferguson",
+        "geonameId": 6633024,
+        "name": "Ferguson Nunataks",
+        "toponymName": "Ferguson Nunataks",
+        "countryName": "Antarctica",
+        "coordinates": [
+            -73.55,
+            -63.8
+        ],
+        "fcl": "T",
+        "fclName": "mountain,hill,rock,... ",
+        "hierarchy": "Earth;Antarctica;Antarctica;Ferguson Nunataks",
+        "adminName1": ""
+    },
+    {
+        "query": "Missouri",
+        "geonameId": 4398678,
+        "name": "Missouri",
+        "toponymName": "Missouri",
+        "countryName": "United States",
+        "coordinates": [
+            38.25031,
+            -92.50046
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Missouri",
+        "adminName1": "Missouri"
+    },
+    {
+        "query": "Haifa",
+        "geonameId": 294801,
+        "name": "Haifa",
+        "toponymName": "Haifa",
+        "countryName": "Israel",
+        "coordinates": [
+            32.81841,
+            34.9885
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Asia;Israel;Haifa;Haifa",
+        "adminName1": "Haifa"
+    },
+    {
+        "query": "Haifa",
+        "geonameId": 294800,
+        "name": "Haifa",
+        "toponymName": "Haifa",
+        "countryName": "Israel",
+        "coordinates": [
+            32.58333,
+            35.0
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;Asia;Israel;Haifa",
+        "adminName1": "Haifa"
+    },
+    {
+        "query": "South america",
+        "geonameId": 6255150,
+        "name": "South America",
+        "toponymName": "South America",
+        "countryName": null,
+        "coordinates": [
+            -14.60485,
+            -57.65625
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;South America",
+        "adminName1": ""
+    },
+    {
+        "query": "South america",
+        "geonameId": 11887752,
+        "name": "South",
+        "toponymName": "South",
+        "countryName": "United States",
+        "coordinates": [
+            33.45876,
+            -90.15081
+        ],
+        "fcl": "L",
+        "fclName": "parks,area, ...",
+        "hierarchy": "Earth;North America;United States;South",
+        "adminName1": ""
+    },
+    {
+        "query": "Truckee",
+        "geonameId": 5403683,
+        "name": "Truckee Tahoe Airport",
+        "toponymName": "Truckee Tahoe Airport",
+        "countryName": "United States",
+        "coordinates": [
+            39.31991,
+            -120.14047
+        ],
+        "fcl": "S",
+        "fclName": "spot, building, farm",
+        "hierarchy": "Earth;North America;United States;California;Nevada;Truckee Tahoe Airport",
+        "adminName1": "California"
+    },
+    {
+        "query": "Truckee",
+        "geonameId": 5403676,
+        "name": "Truckee",
+        "toponymName": "Truckee",
+        "countryName": "United States",
+        "coordinates": [
+            39.32796,
+            -120.18325
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;Nevada;Truckee",
+        "adminName1": "California"
+    },
+    {
+        "query": "San mateo county",
+        "geonameId": 5392423,
+        "name": "San Mateo",
+        "toponymName": "San Mateo",
+        "countryName": "United States",
+        "coordinates": [
+            37.56299,
+            -122.32553
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;California;San Mateo;San Mateo",
+        "adminName1": "California"
+    },
+    {
+        "query": "Shippensburg",
+        "geonameId": 5212038,
+        "name": "Shippensburg",
+        "toponymName": "Shippensburg",
+        "countryName": "United States",
+        "coordinates": [
+            40.05065,
+            -77.52026
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;North America;United States;Pennsylvania;Cumberland;Borough of Shippensburg;Shippensburg",
+        "adminName1": "Pennsylvania"
+    },
+    {
+        "query": "Shippensburg",
+        "geonameId": 5212026,
+        "name": "Shippensburg Township",
+        "toponymName": "Township of Shippensburg",
+        "countryName": "United States",
+        "coordinates": [
+            40.06042,
+            -77.50798
+        ],
+        "fcl": "A",
+        "fclName": "country, state, region,...",
+        "hierarchy": "Earth;North America;United States;Pennsylvania;Cumberland;Shippensburg Township",
+        "adminName1": "Pennsylvania"
+    },
+    {
+        "query": "Jerusalem",
+        "geonameId": 281184,
+        "name": "Jerusalem",
+        "toponymName": "Jerusalem",
+        "countryName": "Israel",
+        "coordinates": [
+            31.76904,
+            35.21633
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Asia;Israel;Jerusalem;Jerusalem",
+        "adminName1": "Jerusalem"
+    },
+    {
+        "query": "Jerusalem",
+        "geonameId": 7303419,
+        "name": "East Jerusalem",
+        "toponymName": "East Jerusalem",
+        "countryName": "Palestine",
+        "coordinates": [
+            31.78336,
+            35.23388
+        ],
+        "fcl": "P",
+        "fclName": "city, village,...",
+        "hierarchy": "Earth;Asia;Palestine;West Bank;Quds Governorate;B\u0101b as S\u0101hirah;East Jerusalem",
+        "adminName1": "West Bank"
     }
 ]
