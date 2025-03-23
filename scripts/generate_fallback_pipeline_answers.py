@@ -142,7 +142,9 @@ if __name__ == "__main__":
     confidence_map = {"High": 3, "Medium": 2, "Low": 1, "Unknown": 1, "N/A": 1}
 
     # Loading the MBFC database
-    with open("dataset/MBFC Bias Database 12-12-24.json", "r") as file:
+    with open(
+        "dataset/MBFC Bias Database 12-12-24.json", "r", encoding="utf-8"
+    ) as file:
         mbfc_data = json.load(file)
 
     # Create {domain: credibility} quick lookup table

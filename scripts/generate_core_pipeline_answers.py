@@ -106,7 +106,7 @@ if __name__ == "__main__":
     # Prepare data
     train = load_json("dataset/train.json")
     # Load test images
-    test = load_json("dataset/test_test.json")
+    test = load_json("dataset/test.json")
     task_test = [t for t in test if t[args.task] != "not enough information"]
     image_paths = [t["image path"] for t in task_test]
     if args.task == "date":
@@ -115,7 +115,9 @@ if __name__ == "__main__":
         ground_truth = [t[args.task] for t in task_test]
 
     # Loading the MBFC database
-    with open("dataset/MBFC Bias Database 12-12-24.json", "r") as file:
+    with open(
+        "dataset/MBFC Bias Database 12-12-24.json", "r", encoding="utf-8"
+    ) as file:
         mbfc_data = json.load(file)
 
     # Create {domain: credibility} quick lookup table
