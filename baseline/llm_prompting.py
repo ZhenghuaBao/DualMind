@@ -360,3 +360,37 @@ def assemble_prompt_llava(
     else:
         prompt += "ASSISTANT:"
     return prompt
+
+
+#############
+#   Llama   #
+#############
+
+
+def llama_prompting(prompt, pipeline, tokenizer, temperature, max_tokens):
+    """
+    Prompting Llama2 model for text input.
+    """
+    output = pipeline(
+        prompt,
+        eos_token_id=tokenizer.eos_token_id,
+        max_length=max_tokens,
+        temperature=temperature,
+        do_sample=True,
+    )["generated_text"]
+    return output
+
+
+def assemble_prompt_llama(
+    question, answer=None, evidence=[], demonstrations=[], modality="evidence"
+):
+    """
+    Assemble the prompt for Llama2.
+    """
+    prompt = "<s>[INST] <<SYS>>"
+    prompt += "You are given online articles that used a certain image. Your task is to answer a question about the image.<</SYS>>"
+    if len(evidence) != 0:
+        prompt += get_evidence_prompt(evidence)
+    prompt += "Question: " + question + "\n"
+    prompt += "[/INST]"
+    return prompt
