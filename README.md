@@ -164,7 +164,7 @@ If you use this work or the underlying dataset, please cite the original 5Pillar
 
 
 
-## Disclaimer
+## Acknowledgement
 
 > This project was developed as part of the **Project Lab: Multimodal Artificial Intelligence 2024** at **TU Darmstadt**. It builds heavily upon the foundational work ["Image, Tell me your story!" Predicting the original meta-context of visual misinformation](https://aclanthology.org/2024.emnlp-main.448/).
 >
