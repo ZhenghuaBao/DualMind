@@ -32,7 +32,7 @@ Experiments demonstrate that DualMind significantly improves evidence retrieval 
 ## Create environment
 
 ```
-$ conda create --name DualMind python=3.9
+$ conda create --name DualMind python=3.10
 $ conda activate DualMind
 $ pip install -r requirements.txt
 $ python -m spacy download en_core_web_lg
