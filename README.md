@@ -38,6 +38,14 @@ $ pip install -r requirements.txt
 $ python -m spacy download en_core_web_lg
 ```
 
+### APIs
+
+- Our baseline model relies on evidence retrieved with reverse image search using the [Google Vision API](https://cloud.google.com/vision/docs/detecting-web) and [Tineye](https://tineye.com/). All URLs for the text evidence that we used in our experiments are provided in this repo. However, should you want to collect your own evidence, you will need to create a Google Cloud account and create an API key, or use a different reverse image search service.
+
+- To gather evidence using a keyword search, you'll need to generate a [Serper API Key](https://serpapi.com/). This key enables you to perform Google web searches and retrieve relevant textual and visual evidence based on the generated description of the provided image.
+
+- If you want to use GPT4(-Vision) for answer generation, you will need an an API key from [OpenAI](https://platform.openai.com/api-keys).
+
 ## 5Pils dataset
 
 We used 5pillars dataset provided by [Jonathan Tonglet](mailto:jonathan.tonglet@tu-darmstadt.de).
@@ -48,17 +56,88 @@ You can collect the images using the following script:
 $ python scripts/build_dataset_from_url.py
 ```
 
+### Collecting the evidence
+
+1) Collect the text evidence based on their URLs:
+
+```
+$ python scripts/collect_RIS_evidence.py --collect_google 0 --evidence_urls dataset/retrieval_results/evidence_urls.json 
+```
+
+Instead of using the provided evidence set, you can also collect your own by setting *collect_google* to 1. This will require to provide a Google Vision API key. 
+
+2) Collect the ebidence based on their keywords (Serper API required):
+
+```
+$ python scripts/collect_keyword_evidence.py --collect_keyword 1
+```
+
+Once the evidence has been collected, make sure to download the extracted images so they can be used later for similarity checks:
+
+```
+$ python scripts/download_keyowrd_search_images.py
+```
+
+If you want to validate downloaded images:
+
+```
+$ python scripts/validate_images.py
+```
+
+This will display a list of images that failed to download correctly.
+
+###  Compute embeddings 
+
+Compute embeddings for evidence ranking based on images or context and similarity checks:
+
+```
+$ python scripts/get_embeddings.py
+```
+
 ## Pipeline
 
 <p align="center">
   <img width="80%" src="figs/2.png" alt="header" />
 </p>
 
-You can generate answers for a specific pillar. The plus pillar includes a **confidence score** and **forgery explanation**. For example, to generate answers for the **Date** pillar using multimodal zero-shot LLaVA:
+You can generate answers for a specific pillar. The plus pillar includes a **confidence score** and **forgery explanation**. For example, to generate answers for the **Date** pillar using multimodal LLaVA:
+
+a) Original baseline:
 
 ```
-$ python scripts/get_5pillars_answers.py --results_file output/results_date.json --task date --modality multimodal --n_shots 0 --model llava
+$ python scripts/get_5pillars_answers.py --results_file output/results_date.json --task date --modality multimodal --model llava
 ```
+
+a) Core Pipeline:
+
+```
+$ python scripts/generate_core_pipeline_answers.py --results_file output/core_results_date.json --task date --modality multimodal --model llava
+```
+
+a) Fallback Pipeline:
+
+```
+$ python scripts/generate_fallback_answers.py --results_file output/fallback_results_date.json --task date --modality multimodal --model llava
+```
+
+### Answer Selection
+
+After generating both core and fallback answers, you can choose the final answers by specifying the task, e.g. for the **Date** pillar, using the following command:
+
+```
+$ python scripts/answer_selection.py --task date
+```
+
+This will produce a JSON file containing the final output of the pipeline.
+
+## Evaluation
+
+Assess the model's performance using the final results. For instance, when evaluating the **Date** pillar:
+
+```
+$ python scripts/evaluate_answer_generation.py --results_file output/final_results_date.json --task date
+```
+ 
 
 ## Citation
 
