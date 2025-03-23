@@ -25,6 +25,7 @@ def gpt4_prompting(content, client, max_tokens=1000):
     usage = completion.usage.total_tokens
     return output, usage
 
+
 def gpt4_keyword_prompting(system_prompt, content, client, max_tokens=1000):
     """
     Prompting the standard GPT4 model. Used for data labeling.
@@ -32,15 +33,14 @@ def gpt4_keyword_prompting(system_prompt, content, client, max_tokens=1000):
     deployment_name = "gpt-4o-mini"
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": content}
-        ]
+        {"role": "user", "content": content},
+    ]
     completion = client.chat.completions.create(
         model=deployment_name, messages=messages, max_tokens=max_tokens
     )
     output = completion.choices[0].message.content
     usage = completion.usage.total_tokens
     return output, usage
-
 
 
 def gpt4_vision_prompting(
@@ -78,32 +78,36 @@ def gpt4_vision_prompting(
     return output
 
 
+# Special prompting for integrating forgery detection into prompt
 def gpt4_vision_prompting_with_forgery_detection_(
-        prompt,
-        client,
-        image_path,
-        map_manipulated_original={},
-        modality='vision',
-        temperature=0.2,
-        max_tokens=50,
-        forgery_detection_explanation=None,
-        forgery_detection_path=None):
-    '''
+    prompt,
+    client,
+    image_path,
+    map_manipulated_original={},
+    modality="vision",
+    temperature=0.2,
+    max_tokens=50,
+    forgery_detection_explanation=None,
+    forgery_detection_path=None,
+):
+    """
     Prompting GPT4 multimodal.
-    '''
+    """
     # deployment_name = 'gpt-4-turbo'
-    deployment_name = 'gpt-4o-mini'
+    deployment_name = "gpt-4o-mini"
     content = [{"type": "text", "text": prompt}]
 
-    if modality in ['vision', 'multimodal']:
+    if modality in ["vision", "multimodal"]:
         if image_path in map_manipulated_original:
             # Convert to the original image (if the image is detected as manipulated and the original image is available)
             image_path = map_manipulated_original[image_path]
 
         try:
             with open(image_path, "rb") as image_file:
-                image64 = f"data:image/{image_path.split('.')[-1]};base64," + base64.b64encode(
-                    image_file.read()).decode('utf-8')
+                image64 = (
+                    f"data:image/{image_path.split('.')[-1]};base64,"
+                    + base64.b64encode(image_file.read()).decode("utf-8")
+                )
                 content.append({"type": "image_url", "image_url": {"url": image64}})
         except FileNotFoundError as e:
             print(f"Error: Unable to locate the image file - {e}")
@@ -112,12 +116,16 @@ def gpt4_vision_prompting_with_forgery_detection_(
     messages = [{"role": "user", "content": content}]
 
     # If forgery detection information exists, process it as a separate prompt
-    forgery_detection_content = "Forgery detector did not find any forgery part in this image."
+    forgery_detection_content = (
+        "Forgery detector did not find any forgery part in this image."
+    )
     if forgery_detection_explanation and forgery_detection_path:
         try:
             with open(forgery_detection_path, "rb") as forgery_image_file:
-                forgery_image64 = f"data:image/{forgery_detection_path.split('.')[-1]};base64," + base64.b64encode(
-                    forgery_image_file.read()).decode('utf-8')
+                forgery_image64 = (
+                    f"data:image/{forgery_detection_path.split('.')[-1]};base64,"
+                    + base64.b64encode(forgery_image_file.read()).decode("utf-8")
+                )
                 forgery_detection_content = (
                     "This message is the output of the forgery detection. The image represents semantic segmentation of the "
                     "tampered area. Please be aware that forgery detection has a high false positive rate. Ignore any areas "
@@ -132,7 +140,9 @@ def gpt4_vision_prompting_with_forgery_detection_(
             # forgery_detection_content = "Forgery detector did not find any forgery part in this image."
 
     # Add forgery detection information to content
-    forgery_detection_content_message = [{"role": "user", "content": forgery_detection_content}]
+    forgery_detection_content_message = [
+        {"role": "user", "content": forgery_detection_content}
+    ]
     messages.extend(forgery_detection_content_message)
 
     try:
@@ -140,7 +150,7 @@ def gpt4_vision_prompting_with_forgery_detection_(
             model=deployment_name,
             temperature=temperature,
             messages=messages,
-            max_tokens=max_tokens
+            max_tokens=max_tokens,
         )
         output = completion.choices[0].message.content
         print(output)
@@ -150,33 +160,37 @@ def gpt4_vision_prompting_with_forgery_detection_(
 
     return output
 
+
 def gpt4_vision_prompting_with_forgery_detection(
-        prompt,
-        client,
-        image_path,
-        map_manipulated_original={},
-        modality='vision',
-        temperature=0.2,
-        max_tokens=50,
-        forgery_detection_explanation=None,
-        forgery_detection_path=None):
-    '''
+    prompt,
+    client,
+    image_path,
+    map_manipulated_original={},
+    modality="vision",
+    temperature=0.2,
+    max_tokens=50,
+    forgery_detection_explanation=None,
+    forgery_detection_path=None,
+):
+    """
     Prompting GPT4 multimodal.
-    '''
+    """
     # deployment_name = 'gpt-4-turbo'
-    deployment_name = 'gpt-4-turbo'
+    deployment_name = "gpt-4-turbo"
     content = [{"type": "text", "text": prompt}]
 
     # Process the image
-    if modality in ['vision', 'multimodal']:
+    if modality in ["vision", "multimodal"]:
         if image_path in map_manipulated_original:
             # Convert to the original image (if the image is detected as manipulated and the original image is available)
             image_path = map_manipulated_original[image_path]
 
         try:
             with open(image_path, "rb") as image_file:
-                image64 = f"data:image/{image_path.split('.')[-1]};base64," + base64.b64encode(
-                    image_file.read()).decode('utf-8')
+                image64 = (
+                    f"data:image/{image_path.split('.')[-1]};base64,"
+                    + base64.b64encode(image_file.read()).decode("utf-8")
+                )
                 content.append({"type": "image_url", "image_url": {"url": image64}})
         except FileNotFoundError as e:
             print(f"Error: Unable to locate the image file - {e}")
@@ -187,8 +201,10 @@ def gpt4_vision_prompting_with_forgery_detection(
     if forgery_detection_explanation and forgery_detection_path:
         try:
             with open(forgery_detection_path, "rb") as forgery_image_file:
-                forgery_image64 = f"data:image/{forgery_detection_path.split('.')[-1]};base64," + base64.b64encode(
-                    forgery_image_file.read()).decode('utf-8')
+                forgery_image64 = (
+                    f"data:image/{forgery_detection_path.split('.')[-1]};base64,"
+                    + base64.b64encode(forgery_image_file.read()).decode("utf-8")
+                )
 
                 # Add forgery detection image separately as image_url
                 forgery_detection_content = (
@@ -201,12 +217,16 @@ def gpt4_vision_prompting_with_forgery_detection(
 
                 # Add forgery detection explanation to content
                 content.append({"type": "text", "text": forgery_detection_content})
-                content.append({"type": "image_url", "image_url": {"url": forgery_image64}})
+                content.append(
+                    {"type": "image_url", "image_url": {"url": forgery_image64}}
+                )
 
         except FileNotFoundError as e:
             pass
             # If forgery detection image is not found, retain the default prompt
-            forgery_detection_content = "Forgery detector did not find any forgery part in this image."
+            forgery_detection_content = (
+                "Forgery detector did not find any forgery part in this image."
+            )
             content.append({"type": "text", "text": forgery_detection_content})
 
     # Create messages
@@ -217,7 +237,7 @@ def gpt4_vision_prompting_with_forgery_detection(
             model=deployment_name,
             temperature=temperature,
             messages=messages,
-            max_tokens=max_tokens
+            max_tokens=max_tokens,
         )
         # Get the model's output
         output = completion.choices[0].message.content
@@ -227,7 +247,6 @@ def gpt4_vision_prompting_with_forgery_detection(
         output = "Error: Unable to complete the request."
 
     return output
-
 
 
 def assemble_prompt_gpt4(
@@ -340,38 +359,4 @@ def assemble_prompt_llava(
         prompt += answer + "\n"
     else:
         prompt += "ASSISTANT:"
-    return prompt
-
-
-#############
-#   Llama   #
-#############
-
-
-def llama_prompting(prompt, pipeline, tokenizer, temperature, max_tokens):
-    """
-    Prompting Llama2 model for text input.
-    """
-    output = pipeline(
-        prompt,
-        eos_token_id=tokenizer.eos_token_id,
-        max_length=max_tokens,
-        temperature=temperature,
-        do_sample=True,
-    )["generated_text"]
-    return output
-
-
-def assemble_prompt_llama(
-    question, answer=None, evidence=[], demonstrations=[], modality="evidence"
-):
-    """
-    Assemble the prompt for Llama2.
-    """
-    prompt = "<s>[INST] <<SYS>>"
-    prompt += "You are given online articles that used a certain image. Your task is to answer a question about the image.<</SYS>>"
-    if len(evidence) != 0:
-        prompt += get_evidence_prompt(evidence)
-    prompt += "Question: " + question + "\n"
-    prompt += "[/INST]"
     return prompt

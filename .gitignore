@@ -1,0 +1,11 @@
+dataset/article
+dataset/processed_img
+*.png
+__pycache__/
+*.pyc
+*.npy
+
+.DS_Store
+
+*.json
+*.jpg
