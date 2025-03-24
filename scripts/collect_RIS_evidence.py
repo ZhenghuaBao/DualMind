@@ -187,7 +187,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--tineye_api_key",
         type=str,
-        default="8_S=+7YmvS7wyk*sNaTQkx_0osIn,flM=MNw6W6B",  # Provide your TinEye API key
+        default=" ",  # Provide your TinEye API key
         help="Your key to access the TinEye API. Required if collect_tineye is set to 1.",
     )
 
